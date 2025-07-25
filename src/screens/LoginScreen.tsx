@@ -17,8 +17,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const handleContinue = (): void => {
     if (username.trim()) {
       login(username);
-      // Simulate checking if user exists
-      const hasRegistered = Math.random() > 0.5; // Random for demo
+      const hasRegistered = Math.random() > 0.5;
       
       if (hasRegistered) {
         navigation.navigate('GenerateLead');

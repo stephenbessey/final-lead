@@ -1,39 +1,44 @@
-import { useState, useCallback } from 'react';
-import { Lead } from '../types';
-import { generateRandomLead } from '../utils/leadGenerator';
+import { useState } from 'react';
+import { Lead, LeadGenerationOptions } from '../types';
+import { generateLead } from '../services/leadService';
 
-interface UseLeadGenerationReturn {
-  isGenerating: boolean;
-  currentLead: Lead | null;
-  generateLead: () => Promise<Lead>;
+interface UseLeadGenerationResult {
+  lead: Lead | null;
+  isLoading: boolean;
+  error: string | null;
+  generateNewLead: (options: LeadGenerationOptions) => Promise<void>;
   clearLead: () => void;
 }
 
-export const useLeadGeneration = (): UseLeadGenerationReturn => {
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [currentLead, setCurrentLead] = useState<Lead | null>(null);
+export const useLeadGeneration = (): UseLeadGenerationResult => {
+  const [lead, setLead] = useState<Lead | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const generateLead = useCallback(async (): Promise<Lead> => {
-    setIsGenerating(true);
+  const generateNewLead = async (options: LeadGenerationOptions): Promise<void> => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const newLead = await generateLead(options);
+      setLead(newLead);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to generate lead');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const newLead = generateRandomLead();
-        setCurrentLead(newLead);
-        setIsGenerating(false);
-        resolve(newLead);
-      }, 3000); 
-    });
-  }, []);
-
-  const clearLead = useCallback((): void => {
-    setCurrentLead(null);
-  }, []);
+  const clearLead = (): void => {
+    setLead(null);
+    setError(null);
+  };
 
   return {
-    isGenerating,
-    currentLead,
-    generateLead,
+    lead,
+    isLoading,
+    error,
+    generateNewLead,
     clearLead,
   };
 };

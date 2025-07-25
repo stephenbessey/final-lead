@@ -97,7 +97,6 @@ const styles = StyleSheet.create({
     padding: SPACING.xs,
   },
   
-  // Error variant
   errorContainer: {
     backgroundColor: COLORS.errorLight,
     borderRadius: RADIUS.sm,
@@ -109,7 +108,6 @@ const styles = StyleSheet.create({
     color: COLORS.error,
   },
   
-  // Warning variant
   warningContainer: {
     backgroundColor: COLORS.warningLight,
     borderRadius: RADIUS.sm,
@@ -121,7 +119,6 @@ const styles = StyleSheet.create({
     color: COLORS.warning,
   },
   
-  // Info variant
   infoContainer: {
     backgroundColor: COLORS.primaryLight,
     borderRadius: RADIUS.sm,

@@ -1,8 +1,4 @@
-import { ValidationResult } from '../types';
-
-const ZIP_CODE_REGEX = /^(\d{5})(\d{4})?$/;
-
-export const validateZipCode = (zipCode: string): ValidationResult => {
+export const validateZipCode = (zipCode: string) => {
   const errors: string[] = [];
   
   if (!zipCode) {
@@ -10,10 +6,11 @@ export const validateZipCode = (zipCode: string): ValidationResult => {
     return { isValid: false, errors };
   }
   
-  const cleanZipCode = sanitizeZipCode(zipCode);
+  const cleanZipCode = zipCode.replace(/[\s-]/g, '');
+  const zipRegex = /^(\d{5})(\d{4})?$/;
   
-  if (!ZIP_CODE_REGEX.test(cleanZipCode)) {
-    errors.push('Please enter a valid US ZIP code (e.g., 12345 or 12345-6789)');
+  if (!zipRegex.test(cleanZipCode)) {
+    errors.push('Please enter a valid US ZIP code');
   }
   
   return {
@@ -21,17 +18,3 @@ export const validateZipCode = (zipCode: string): ValidationResult => {
     errors,
   };
 };
-
-export const sanitizeZipCode = (zipCode: string): string => 
-  zipCode.replace(/[\s-]/g, '');
-
-export const formatZipCode = (zipCode: string): string => {
-  const clean = sanitizeZipCode(zipCode);
-  if (clean.length === 9) {
-    return `${clean.slice(0, 5)}-${clean.slice(5)}`;
-  }
-  return clean;
-};
-
-export const isValidZipCodeFormat = (zipCode: string): boolean => 
-  ZIP_CODE_REGEX.test(sanitizeZipCode(zipCode));

@@ -1,4 +1,3 @@
-// Core business types
 export interface Lead {
   readonly id: string;
   name: string;
@@ -34,7 +33,6 @@ export interface UserData {
   readonly subscriptionStartDate?: Date;
 }
 
-// API and Service types
 export interface LeadGenerationOptions {
   zipCode: string;
   clientType?: ClientType;
@@ -47,7 +45,6 @@ export interface ValidationResult {
   errors: readonly string[];
 }
 
-// UI and Component types
 export interface LoadingState {
   isLoading: boolean;
   loadingMessage?: string;
@@ -59,7 +56,6 @@ export interface ErrorState {
   errorMessage?: string;
 }
 
-// Form types
 export interface LoginForm {
   username: string;
   password?: string;
@@ -70,14 +66,12 @@ export interface RegistrationForm {
   zipCode: string;
 }
 
-// Utility types
 export type DeepPartial<T> = {
   [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
 };
 
 export type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
-// Constants as const assertions for better type safety
 export const LIFE_EVENT_LABELS = {
   baby: 'New Baby',
   death: 'Death in Family',

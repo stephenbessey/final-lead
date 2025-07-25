@@ -1,77 +1,42 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
-import { COLORS, TYPOGRAPHY, SPACING, SHADOWS } from '../constants/theme';
 
 interface ToastProps {
-  visible: boolean;
   message: string;
-  type?: 'success' | 'error' | 'warning' | 'info';
+  visible: boolean;
   duration?: number;
-  onHide: () => void;
+  type?: 'success' | 'error' | 'info';
+  onHide?: () => void;
 }
 
 export const Toast: React.FC<ToastProps> = ({
-  visible,
   message,
-  type = 'info',
+  visible,
   duration = 3000,
+  type = 'info',
   onHide,
 }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const translateAnim = useRef(new Animated.Value(-100)).current;
 
   useEffect(() => {
     if (visible) {
-      Animated.parallel([
+      Animated.sequence([
         Animated.timing(fadeAnim, {
           toValue: 1,
           duration: 300,
           useNativeDriver: true,
         }),
-        Animated.timing(translateAnim, {
+        Animated.delay(duration),
+        Animated.timing(fadeAnim, {
           toValue: 0,
           duration: 300,
           useNativeDriver: true,
         }),
-      ]).start();
-
-      const timer = setTimeout(() => {
-        hideToast();
-      }, duration);
-
-      return () => clearTimeout(timer);
+      ]).start(() => {
+        onHide?.();
+      });
     }
-  }, [visible, duration]);
-
-  const hideToast = (): void => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-      Animated.timing(translateAnim, {
-        toValue: -100,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      onHide();
-    });
-  };
-
-  const getToastStyle = () => {
-    switch (type) {
-      case 'success':
-        return { backgroundColor: COLORS.secondary };
-      case 'error':
-        return { backgroundColor: COLORS.error };
-      case 'warning':
-        return { backgroundColor: COLORS.warning };
-      default:
-        return { backgroundColor: COLORS.primary };
-    }
-  };
+  }, [visible, duration, fadeAnim, onHide]);
 
   if (!visible) return null;
 
@@ -79,11 +44,8 @@ export const Toast: React.FC<ToastProps> = ({
     <Animated.View
       style={[
         styles.container,
-        getToastStyle(),
-        {
-          opacity: fadeAnim,
-          transform: [{ translateY: translateAnim }],
-        },
+        styles[type],
+        { opacity: fadeAnim }
       ]}
     >
       <Text style={styles.message}>{message}</Text>
@@ -94,18 +56,26 @@ export const Toast: React.FC<ToastProps> = ({
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    top: 50,
-    left: SPACING.md,
-    right: SPACING.md,
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
+    bottom: 100,
+    left: 20,
+    right: 20,
+    padding: 16,
     borderRadius: 8,
+    alignItems: 'center',
     zIndex: 1000,
-    ...SHADOWS.medium,
+  },
+  success: {
+    backgroundColor: '#4CAF50',
+  },
+  error: {
+    backgroundColor: '#F44336',
+  },
+  info: {
+    backgroundColor: '#2196F3',
   },
   message: {
-    ...TYPOGRAPHY.body2,
-    color: COLORS.surface,
-    textAlign: 'center',
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '500',
   },
 });

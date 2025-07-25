@@ -1,11 +1,14 @@
 import React from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
+import { View, StyleSheet, ScrollView } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import { RootStackParamList } from '../../App';
 import { AppHeader } from '../components/AppHeader';
+import { LeadHeader } from '../components/LeadHeader';
+import { LeadContactInfo } from '../components/LeadContactInfo';
+import { ContactActions } from '../components/ContactActions';
+import { ActionButtons } from '../components/ActionButtons';
 import { getLifeEventDisplay } from '../leads/lifeEvents';
 import { formatLeadForExport } from '../leads/leadFormatters';
 import { openContactApp, getContactMethodLabel, ContactMethod } from '../contact/contactActions';
@@ -44,11 +47,19 @@ const LeadDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
     warnAboutDataLoss(() => navigation.goBack());
   };
 
+  const handleMenuPress = (): void => {
+    navigation.navigate('Settings');
+  };
+
+  const handleProfilePress = (): void => {
+    // Profile functionality
+  };
+
   return (
     <View style={styles.container}>
       <AppHeader 
-        onMenuPress={() => navigation.navigate('Settings')}
-        onProfilePress={() => {}}
+        onMenuPress={handleMenuPress}
+        onProfilePress={handleProfilePress}
         showCredits={false}
       />
       
@@ -62,5 +73,16 @@ const LeadDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
   );
 };
 
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F5F5F5',
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+  },
+});
 
 export default LeadDetailsScreen;

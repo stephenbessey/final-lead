@@ -57,7 +57,6 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
       <ScrollView style={styles.content}>
         <Text style={styles.title}>Settings</Text>
 
-        {/* Account Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Account</Text>
           

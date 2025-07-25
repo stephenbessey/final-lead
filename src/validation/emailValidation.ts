@@ -1,4 +1,7 @@
-import { ValidationResult } from '../types';
+export interface ValidationResult {
+  isValid: boolean;
+  errors: readonly string[];
+}
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_EMAIL_LENGTH = 254;
@@ -24,6 +27,3 @@ export const validateEmail = (email: string): ValidationResult => {
     errors,
   };
 };
-
-export const isValidEmailFormat = (email: string): boolean => 
-  EMAIL_REGEX.test(email) && email.length <= MAX_EMAIL_LENGTH;
