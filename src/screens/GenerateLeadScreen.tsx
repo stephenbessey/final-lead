@@ -1,22 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, Alert } from 'react-native';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList, Lead } from '../../App';
 import { useUser } from '../context/UserContext';
 import { AppHeader } from '../components/AppHeader';
 import { SlotMachine } from '../components/SlotMachine';
+import { LoadingOverlay } from '../components/LoadingOverlay';
+import { ErrorMessage } from '../components/ErrorMessage';
+import { RootStackScreenProps } from '../types/navigation';
+import { Lead } from '../types';
+import { COLORS, TYPOGRAPHY, SPACING } from '../constants/theme';
 
-type GenerateLeadScreenNavigationProp = StackNavigationProp<RootStackParamList, 'GenerateLead'>;
-
-interface Props {
-  navigation: GenerateLeadScreenNavigationProp;
-}
+type Props = RootStackScreenProps<'GenerateLead'>;
 
 const GenerateLeadScreen: React.FC<Props> = ({ navigation }) => {
   const [isSpinning, setIsSpinning] = useState(false);
-  const { userData, useCredit } = useUser();
+  const { userData, useCredit, isLoading, error, resetError } = useUser();
 
-  const handleGeneratePress = (): void => {
+  const handleGeneratePress = useCallback((): void => {
     if (userData.credits <= 0) {
       showOutOfCreditsAlert();
       return;
@@ -25,15 +24,16 @@ const GenerateLeadScreen: React.FC<Props> = ({ navigation }) => {
     const canGenerate = useCredit();
     if (canGenerate) {
       setIsSpinning(true);
+      resetError(); // Clear any previous errors
     }
-  };
+  }, [userData.credits, useCredit, resetError]);
 
-  const handleLeadResult = (lead: Lead): void => {
+  const handleLeadResult = useCallback((lead: Lead): void => {
     setIsSpinning(false);
     navigation.navigate('LeadDetails', { lead });
-  };
+  }, [navigation]);
 
-  const showOutOfCreditsAlert = (): void => {
+  const showOutOfCreditsAlert = useCallback((): void => {
     Alert.alert(
       'Out of Credits',
       'You have no credits remaining. Would you like to purchase more credits at a premium rate?',
@@ -45,15 +45,28 @@ const GenerateLeadScreen: React.FC<Props> = ({ navigation }) => {
         },
       ]
     );
-  };
+  }, [navigation]);
 
-  const handleMenuPress = (): void => {
+  const handleMenuPress = useCallback((): void => {
     navigation.navigate('Settings');
+  }, [navigation]);
+
+  const handleProfilePress = useCallback((): void => {
+    // Profile functionality - could navigate to profile screen
+    Alert.alert('Profile', 'Profile functionality coming soon!');
+  }, []);
+
+  const getCreditWarningMessage = (): string | null => {
+    if (userData.credits <= 0) {
+      return 'You have no credits remaining';
+    }
+    if (userData.credits <= 3) {
+      return `⚠️ You have ${userData.credits} credit${userData.credits === 1 ? '' : 's'} remaining`;
+    }
+    return null;
   };
 
-  const handleProfilePress = (): void => {
-    // Profile functionality
-  };
+  const warningMessage = getCreditWarningMessage();
 
   return (
     <View style={styles.container}>
@@ -69,22 +82,49 @@ const GenerateLeadScreen: React.FC<Props> = ({ navigation }) => {
           AI-powered lead generation based on life events
         </Text>
 
+        {error && (
+          <ErrorMessage 
+            message={error} 
+            onDismiss={resetError}
+            style={styles.errorContainer}
+          />
+        )}
+
         <View style={styles.slotContainer}>
           <SlotMachine
             onResult={handleLeadResult}
             onGeneratePress={handleGeneratePress}
             isSpinning={isSpinning}
+            disabled={userData.credits <= 0 || isLoading}
           />
         </View>
 
-        {userData.credits <= 3 && (
-          <View style={styles.warningContainer}>
-            <Text style={styles.warningText}>
-              ⚠️ You have {userData.credits} credits remaining
+        {warningMessage && (
+          <View style={[
+            styles.warningContainer,
+            userData.credits === 0 && styles.criticalWarningContainer
+          ]}>
+            <Text style={[
+              styles.warningText,
+              userData.credits === 0 && styles.criticalWarningText
+            ]}>
+              {warningMessage}
+            </Text>
+          </View>
+        )}
+
+        {userData.credits > 0 && userData.credits <= 5 && (
+          <View style={styles.infoContainer}>
+            <Text style={styles.infoText}>
+              💡 Consider upgrading your plan for more credits and better value
             </Text>
           </View>
         )}
       </View>
+
+      {isLoading && (
+        <LoadingOverlay message="Processing your request..." />
+      )}
     </View>
   );
 };
@@ -92,43 +132,65 @@ const GenerateLeadScreen: React.FC<Props> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: COLORS.background,
   },
   content: {
     flex: 1,
-    paddingHorizontal: 24,
-    paddingVertical: 16,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
     justifyContent: 'center',
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#2196F3',
+    ...TYPOGRAPHY.headline,
+    color: COLORS.primary,
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: SPACING.xs,
   },
   subtitle: {
-    fontSize: 16,
-    color: '#757575',
+    ...TYPOGRAPHY.body,
+    color: COLORS.textSecondary,
     textAlign: 'center',
-    marginBottom: 40,
+    marginBottom: SPACING.xl,
   },
   slotContainer: {
     flex: 1,
     justifyContent: 'center',
+    minHeight: 300, // Ensure minimum height for slot machine
+  },
+  errorContainer: {
+    marginBottom: SPACING.md,
   },
   warningContainer: {
-    backgroundColor: '#FFF3E0',
+    backgroundColor: COLORS.warningLight,
     borderRadius: 8,
-    padding: 16,
+    padding: SPACING.md,
     borderLeftWidth: 4,
-    borderLeftColor: '#FF9800',
+    borderLeftColor: COLORS.warning,
+    marginTop: SPACING.md,
+  },
+  criticalWarningContainer: {
+    backgroundColor: COLORS.errorLight,
+    borderLeftColor: COLORS.error,
   },
   warningText: {
-    fontSize: 14,
-    color: '#E65100',
+    ...TYPOGRAPHY.bodySmall,
+    color: COLORS.warning,
     textAlign: 'center',
     fontWeight: '500',
+  },
+  criticalWarningText: {
+    color: COLORS.error,
+  },
+  infoContainer: {
+    backgroundColor: COLORS.primaryLight,
+    borderRadius: 8,
+    padding: SPACING.md,
+    marginTop: SPACING.sm,
+  },
+  infoText: {
+    ...TYPOGRAPHY.bodySmall,
+    color: COLORS.primary,
+    textAlign: 'center',
   },
 });
 
