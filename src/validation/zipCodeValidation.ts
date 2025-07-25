@@ -1,4 +1,6 @@
-export const validateZipCode = (zipCode: string) => {
+import { ValidationResult } from '../types';
+
+export const validateZipCode = (zipCode: string): ValidationResult => {
   const errors: string[] = [];
   
   if (!zipCode) {

@@ -40,7 +40,6 @@ const ConfirmationScreen: React.FC<Props> = ({ navigation, route }) => {
   };
 
   const handleProfilePress = (): void => {
-    // Profile functionality
   };
 
   return (

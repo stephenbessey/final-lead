@@ -1,4 +1,3 @@
-import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { AuthProvider } from './src/context/AuthContext';
@@ -10,6 +9,7 @@ import ConfirmationScreen from './src/screens/ConfirmationScreen';
 import GenerateLeadScreen from './src/screens/GenerateLeadScreen';
 import LeadDetailsScreen from './src/screens/LeadDetailsScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
+import { Lead } from './src/types';
 
 export type RootStackParamList = {
   Login: undefined;
@@ -19,18 +19,6 @@ export type RootStackParamList = {
   LeadDetails: { lead: Lead };
   Settings: undefined;
 };
-
-export interface Lead {
-  id: string;
-  name: string;
-  phone: string;
-  email: string;
-  address: string;
-  propertyValue: string;
-  lifeEvent: 'baby' | 'death' | 'married' | 'house-sold' | 'divorced';
-  clientType: 'buyer' | 'seller';
-  priceRange: '$' | '$$' | '$$$';
-}
 
 const Stack = createStackNavigator<RootStackParamList>();
 

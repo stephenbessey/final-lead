@@ -1,53 +1,57 @@
-import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated } from 'react-native';
+import React from 'react';
+import { Text, StyleSheet, Animated } from 'react-native';
+import { COLORS, TYPOGRAPHY, SPACING, SHADOWS } from '../constants/theme';
 
 interface ToastProps {
   message: string;
   visible: boolean;
-  duration?: number;
   type?: 'success' | 'error' | 'info';
-  onHide?: () => void;
 }
 
-export const Toast: React.FC<ToastProps> = ({
-  message,
-  visible,
-  duration = 3000,
-  type = 'info',
-  onHide,
+export const Toast: React.FC<ToastProps> = ({ 
+  message, 
+  visible, 
+  type = 'info' 
 }) => {
-  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const opacity = React.useRef(new Animated.Value(0)).current;
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (visible) {
-      Animated.sequence([
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.delay(duration),
-        Animated.timing(fadeAnim, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start(() => {
-        onHide?.();
-      });
+      Animated.timing(opacity, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      Animated.timing(opacity, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
     }
-  }, [visible, duration, fadeAnim, onHide]);
+  }, [visible, opacity]);
 
   if (!visible) return null;
 
+  const getBackgroundColor = () => {
+    switch (type) {
+      case 'success':
+        return COLORS.success;
+      case 'error':
+        return COLORS.error;
+      default:
+        return COLORS.primary;
+    }
+  };
+
   return (
-    <Animated.View
-      style={[
-        styles.container,
-        styles[type],
-        { opacity: fadeAnim }
-      ]}
-    >
+    <Animated.View style={[
+      styles.container,
+      { 
+        opacity,
+        backgroundColor: getBackgroundColor(),
+      }
+    ]}>
       <Text style={styles.message}>{message}</Text>
     </Animated.View>
   );
@@ -57,25 +61,17 @@ const styles = StyleSheet.create({
   container: {
     position: 'absolute',
     bottom: 100,
-    left: 20,
-    right: 20,
-    padding: 16,
+    left: SPACING.lg,
+    right: SPACING.lg,
+    padding: SPACING.md,
     borderRadius: 8,
     alignItems: 'center',
     zIndex: 1000,
-  },
-  success: {
-    backgroundColor: '#4CAF50',
-  },
-  error: {
-    backgroundColor: '#F44336',
-  },
-  info: {
-    backgroundColor: '#2196F3',
+    ...SHADOWS.medium,
   },
   message: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '500',
+    ...TYPOGRAPHY.body,
+    color: COLORS.white,
+    textAlign: 'center',
   },
 });

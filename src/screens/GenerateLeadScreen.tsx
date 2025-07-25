@@ -24,7 +24,7 @@ const GenerateLeadScreen: React.FC<Props> = ({ navigation }) => {
     const canGenerate = useCredit();
     if (canGenerate) {
       setIsSpinning(true);
-      resetError(); // Clear any previous errors
+      resetError(); 
     }
   }, [userData.credits, useCredit, resetError]);
 
@@ -52,7 +52,6 @@ const GenerateLeadScreen: React.FC<Props> = ({ navigation }) => {
   }, [navigation]);
 
   const handleProfilePress = useCallback((): void => {
-    // Profile functionality - could navigate to profile screen
     Alert.alert('Profile', 'Profile functionality coming soon!');
   }, []);
 
@@ -155,7 +154,7 @@ const styles = StyleSheet.create({
   slotContainer: {
     flex: 1,
     justifyContent: 'center',
-    minHeight: 300, // Ensure minimum height for slot machine
+    minHeight: 300,
   },
   errorContainer: {
     marginBottom: SPACING.md,

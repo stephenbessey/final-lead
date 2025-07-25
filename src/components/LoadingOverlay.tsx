@@ -1,71 +1,51 @@
 import React from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, Modal } from 'react-native';
-import { COLORS, TYPOGRAPHY, SPACING, Z_INDEX } from '../constants/theme';
+import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { COLORS, TYPOGRAPHY, SPACING } from '../constants/theme';
 
 interface LoadingOverlayProps {
-  visible?: boolean;
   message?: string;
-  size?: 'small' | 'large';
-  color?: string;
+  visible?: boolean;
 }
 
-export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
-  visible = true,
-  message = 'Loading...',
-  size = 'large',
-  color = COLORS.primary,
+export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ 
+  message = 'Loading...', 
+  visible = true 
 }) => {
   if (!visible) return null;
 
   return (
-    <Modal
-      transparent
-      animationType="fade"
-      visible={visible}
-      statusBarTranslucent
-    >
-      <View style={styles.overlay}>
-        <View style={styles.container}>
-          <ActivityIndicator 
-            size={size} 
-            color={color}
-            style={styles.spinner}
-          />
-          {message && (
-            <Text style={styles.message}>{message}</Text>
-          )}
-        </View>
+    <View style={styles.container}>
+      <View style={styles.content}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+        <Text style={styles.message}>{message}</Text>
       </View>
-    </Modal>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: COLORS.overlay,
+  container: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: Z_INDEX.overlay,
+    zIndex: 1000,
   },
-  container: {
+  content: {
     backgroundColor: COLORS.surface,
-    borderRadius: 12,
     padding: SPACING.xl,
+    borderRadius: 12,
     alignItems: 'center',
-    minWidth: 120,
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-  },
-  spinner: {
-    marginBottom: SPACING.md,
+    minWidth: 200,
   },
   message: {
     ...TYPOGRAPHY.body,
     color: COLORS.textPrimary,
+    marginTop: SPACING.md,
     textAlign: 'center',
   },
 });

@@ -1,79 +1,77 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { ContactMethod } from '../contact/contactActions';
+import { ContactMethod } from '../types';
+import { COLORS, TYPOGRAPHY, SPACING, SHADOWS } from '../constants/theme';
 
 interface ContactActionsProps {
-  onContactAction: (action: ContactMethod) => void;
+  onContactAction: (method: ContactMethod) => void;
 }
 
 export const ContactActions: React.FC<ContactActionsProps> = ({ onContactAction }) => (
-  <View style={styles.section}>
-    <Text style={styles.sectionTitle}>Contact Actions</Text>
-    <View style={styles.actionGrid}>
-      <ContactButton 
-        icon="call" 
-        label="Call" 
-        color="#4CAF50" 
-        onPress={() => onContactAction('call')} 
-      />
-      <ContactButton 
-        icon="chatbubble" 
-        label="Text" 
-        color="#2196F3" 
-        onPress={() => onContactAction('text')} 
-      />
-      <ContactButton 
-        icon="mail" 
-        label="Email" 
-        color="#FF9800" 
-        onPress={() => onContactAction('email')} 
-      />
+  <View style={styles.container}>
+    <Text style={styles.title}>Contact Actions</Text>
+    
+    <View style={styles.actionRow}>
+      <Pressable
+        style={styles.actionButton}
+        onPress={() => onContactAction('phone')}
+        android_ripple={{ color: COLORS.primaryDark }}
+      >
+        <Ionicons name="call" size={24} color={COLORS.white} />
+        <Text style={styles.actionText}>Call</Text>
+      </Pressable>
+      
+      <Pressable
+        style={styles.actionButton}
+        onPress={() => onContactAction('sms')}
+        android_ripple={{ color: COLORS.primaryDark }}
+      >
+        <Ionicons name="chatbubble" size={24} color={COLORS.white} />
+        <Text style={styles.actionText}>SMS</Text>
+      </Pressable>
+      
+      <Pressable
+        style={styles.actionButton}
+        onPress={() => onContactAction('email')}
+        android_ripple={{ color: COLORS.primaryDark }}
+      >
+        <Ionicons name="mail" size={24} color={COLORS.white} />
+        <Text style={styles.actionText}>Email</Text>
+      </Pressable>
     </View>
   </View>
 );
 
-interface ContactButtonProps {
-  icon: string;
-  label: string;
-  color: string;
-  onPress: () => void;
-}
-
-const ContactButton: React.FC<ContactButtonProps> = ({ icon, label, color, onPress }) => (
-  <Pressable style={[styles.contactButton, { borderColor: color }]} onPress={onPress}>
-    <Ionicons name={icon as any} size={32} color={color} />
-    <Text style={[styles.contactButtonText, { color }]}>{label}</Text>
-  </Pressable>
-);
-
 const styles = StyleSheet.create({
-  section: {
-    backgroundColor: '#fff',
+  container: {
+    backgroundColor: COLORS.surface,
+    padding: SPACING.lg,
     borderRadius: 12,
-    padding: 20,
-    marginBottom: 16,
+    marginBottom: SPACING.md,
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#424242',
-    marginBottom: 16,
+  title: {
+    ...TYPOGRAPHY.title,
+    color: COLORS.textPrimary,
+    marginBottom: SPACING.md,
   },
-  actionGrid: {
+  actionRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
   },
-  contactButton: {
+  actionButton: {
+    backgroundColor: COLORS.primary,
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+    borderRadius: 8,
     alignItems: 'center',
-    padding: 16,
-    borderWidth: 2,
-    borderRadius: 12,
     minWidth: 80,
+    ...SHADOWS.small,
   },
-  contactButtonText: {
-    fontSize: 14,
-    fontWeight: '500',
-    marginTop: 8,
+  actionText: {
+    ...TYPOGRAPHY.bodySmall,
+    color: COLORS.white,
+    marginTop: SPACING.xs,
+    fontWeight: '600',
   },
 });

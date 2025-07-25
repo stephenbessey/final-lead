@@ -6,32 +6,29 @@ export const confirmContactAction = (
 ): void => {
   Alert.alert(
     'Contact Lead',
-    `This will ${actionLabel} the lead and open in another app. Are you sure?`,
+    `Are you sure you want to ${actionLabel.toLowerCase()} this lead?`,
     [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Yes', onPress: onConfirm },
+      { text: actionLabel, onPress: onConfirm },
     ]
   );
 };
 
 export const warnAboutDataLoss = (onConfirm: () => void): void => {
   Alert.alert(
-    'Warning',
-    'Lead data will be lost if you leave. Continue?',
+    'Leave Screen',
+    'Are you sure you want to go back? Any unsaved changes will be lost.',
     [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Yes', style: 'destructive', onPress: onConfirm },
+      { text: 'Leave', style: 'destructive', onPress: onConfirm },
     ]
   );
 };
 
-export const confirmLogout = (onConfirm: () => void): void => {
-  Alert.alert(
-    'Logout',
-    'Are you sure you want to logout?',
-    [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Logout', style: 'destructive', onPress: onConfirm },
-    ]
-  );
+export const showErrorAlert = (title: string, message: string): void => {
+  Alert.alert(title, message, [{ text: 'OK' }]);
+};
+
+export const showSuccessAlert = (title: string, message: string): void => {
+  Alert.alert(title, message, [{ text: 'OK' }]);
 };

@@ -1,132 +1,50 @@
 import React from 'react';
-import { View, Text, StyleSheet, Pressable, ViewStyle } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, TYPOGRAPHY, SPACING, RADIUS } from '../constants/theme';
+import { COLORS, TYPOGRAPHY, SPACING } from '../constants/theme';
 
 interface ErrorMessageProps {
   message: string;
   onDismiss?: () => void;
-  variant?: 'error' | 'warning' | 'info';
-  style?: ViewStyle;
-  showIcon?: boolean;
+  style?: any;
 }
 
-export const ErrorMessage: React.FC<ErrorMessageProps> = ({
-  message,
-  onDismiss,
-  variant = 'error',
-  style,
-  showIcon = true,
-}) => {
-  const getVariantStyles = () => {
-    switch (variant) {
-      case 'warning':
-        return {
-          container: styles.warningContainer,
-          text: styles.warningText,
-          icon: 'warning' as const,
-          iconColor: COLORS.warning,
-        };
-      case 'info':
-        return {
-          container: styles.infoContainer,
-          text: styles.infoText,
-          icon: 'information-circle' as const,
-          iconColor: COLORS.primary,
-        };
-      default:
-        return {
-          container: styles.errorContainer,
-          text: styles.errorText,
-          icon: 'alert-circle' as const,
-          iconColor: COLORS.error,
-        };
-    }
-  };
+export const ErrorMessage: React.FC<ErrorMessageProps> = ({ 
+  message, 
+  onDismiss, 
+  style 
+}) => (
+  <View style={[styles.container, style]}>
+    <Ionicons name="alert-circle" size={20} color={COLORS.error} />
+    <Text style={styles.message}>{message}</Text>
+    {onDismiss && (
+      <Pressable onPress={onDismiss} style={styles.dismissButton}>
+        <Ionicons name="close" size={20} color={COLORS.error} />
+      </Pressable>
+    )}
+  </View>
+);
 
-  const variantStyles = getVariantStyles();
-
-  return (
-    <View style={[variantStyles.container, style]}>
-      <View style={styles.content}>
-        {showIcon && (
-          <Ionicons 
-            name={variantStyles.icon} 
-            size={20} 
-            color={variantStyles.iconColor}
-            style={styles.icon}
-          />
-        )}
-        <Text style={[styles.baseText, variantStyles.text]}>
-          {message}
-        </Text>
-        {onDismiss && (
-          <Pressable 
-            onPress={onDismiss}
-            style={styles.dismissButton}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          >
-            <Ionicons 
-              name="close" 
-              size={18} 
-              color={variantStyles.iconColor}
-            />
-          </Pressable>
-        )}
-      </View>
-    </View>
-  );
-};
-
-const styles = StyleSheet.create({
-  content: {
+const errorMessageStyles = StyleSheet.create({
+  container: {
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
+    backgroundColor: COLORS.errorLight,
+    padding: SPACING.md,
+    borderRadius: 8,
+    borderLeftWidth: 4,
+    borderLeftColor: COLORS.error,
   },
-  icon: {
-    marginRight: SPACING.sm,
-  },
-  baseText: {
+  message: {
     ...TYPOGRAPHY.bodySmall,
+    color: COLORS.error,
     flex: 1,
-    lineHeight: 18,
+    marginLeft: SPACING.sm,
   },
   dismissButton: {
     marginLeft: SPACING.sm,
     padding: SPACING.xs,
   },
-  
-  errorContainer: {
-    backgroundColor: COLORS.errorLight,
-    borderRadius: RADIUS.sm,
-    padding: SPACING.md,
-    borderLeftWidth: 4,
-    borderLeftColor: COLORS.error,
-  },
-  errorText: {
-    color: COLORS.error,
-  },
-  
-  warningContainer: {
-    backgroundColor: COLORS.warningLight,
-    borderRadius: RADIUS.sm,
-    padding: SPACING.md,
-    borderLeftWidth: 4,
-    borderLeftColor: COLORS.warning,
-  },
-  warningText: {
-    color: COLORS.warning,
-  },
-  
-  infoContainer: {
-    backgroundColor: COLORS.primaryLight,
-    borderRadius: RADIUS.sm,
-    padding: SPACING.md,
-    borderLeftWidth: 4,
-    borderLeftColor: COLORS.primary,
-  },
-  infoText: {
-    color: COLORS.primary,
-  },
 });
+
+const styles = errorMessageStyles;

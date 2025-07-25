@@ -1,5 +1,4 @@
-import { Lead } from '../types';
-import { ValidationResult } from './zipCodeValidation';
+import { Lead, ValidationResult } from '../types';
 import { validateEmail } from './emailValidation';
 import { validatePhoneNumber } from './phoneValidation';
 
@@ -30,6 +29,22 @@ export const validateLead = (lead: Partial<Lead>): ValidationResult => {
 
   if (!lead.address?.trim()) {
     errors.push('Address is required');
+  }
+
+  if (!lead.propertyValue?.trim()) {
+    errors.push('Property value is required');
+  }
+
+  if (!lead.lifeEvent) {
+    errors.push('Life event is required');
+  }
+
+  if (!lead.clientType) {
+    errors.push('Client type is required');
+  }
+
+  if (!lead.priceRange) {
+    errors.push('Price range is required');
   }
 
   return {

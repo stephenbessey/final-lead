@@ -1,7 +1,4 @@
-export interface ValidationResult {
-  isValid: boolean;
-  errors: readonly string[];
-}
+import { ValidationResult } from '../types';
 
 export const validatePhoneNumber = (phone: string): ValidationResult => {
   const errors: string[] = [];

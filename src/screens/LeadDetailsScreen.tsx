@@ -4,6 +4,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
 import * as Clipboard from 'expo-clipboard';
 import { RootStackParamList } from '../../App';
+import { ContactMethod } from '../types';
 import { AppHeader } from '../components/AppHeader';
 import { LeadHeader } from '../components/LeadHeader';
 import { LeadContactInfo } from '../components/LeadContactInfo';
@@ -11,7 +12,7 @@ import { ContactActions } from '../components/ContactActions';
 import { ActionButtons } from '../components/ActionButtons';
 import { getLifeEventDisplay } from '../leads/lifeEvents';
 import { formatLeadForExport } from '../leads/leadFormatters';
-import { openContactApp, getContactMethodLabel, ContactMethod } from '../contact/contactActions';
+import { openContactApp, getContactMethodLabel } from '../contact/contactActions';
 import { confirmContactAction, warnAboutDataLoss } from '../userInterface/alerts';
 import { notifySuccess } from '../userInterface/notifications';
 

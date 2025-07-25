@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { COLORS, TYPOGRAPHY, SPACING, SHADOWS } from '../constants/theme';
 
 interface ActionButtonsProps {
   onExport: () => void;
@@ -8,43 +9,57 @@ interface ActionButtonsProps {
 }
 
 export const ActionButtons: React.FC<ActionButtonsProps> = ({ onExport, onBack }) => (
-  <View style={styles.section}>
-    <Pressable style={[styles.button, styles.exportButton]} onPress={onExport}>
-      <Ionicons name="share" size={20} color="#fff" />
-      <Text style={styles.buttonText}>Export Lead Data</Text>
+  <View style={styles.container}>
+    <Pressable
+      style={[styles.button, styles.exportButton]}
+      onPress={onExport}
+      android_ripple={{ color: COLORS.secondaryLight }}
+    >
+      <Ionicons name="download" size={20} color={COLORS.white} />
+      <Text style={styles.buttonText}>Export Lead</Text>
     </Pressable>
     
-    <Pressable style={[styles.button, styles.backButton]} onPress={onBack}>
-      <Text style={styles.buttonText}>Back to Generator</Text>
+    <Pressable
+      style={[styles.button, styles.backButton]}
+      onPress={onBack}
+      android_ripple={{ color: COLORS.divider }}
+    >
+      <Ionicons name="arrow-back" size={20} color={COLORS.textPrimary} />
+      <Text style={[styles.buttonText, styles.backButtonText]}>Back</Text>
     </Pressable>
   </View>
 );
 
 const styles = StyleSheet.create({
-  section: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 16,
+  container: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: SPACING.lg,
+    gap: SPACING.md,
   },
   button: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 16,
+    paddingVertical: SPACING.md,
     borderRadius: 8,
-    marginBottom: 12,
+    ...SHADOWS.small,
   },
   exportButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: COLORS.secondary,
   },
   backButton: {
-    backgroundColor: '#2196F3',
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.divider,
   },
   buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginLeft: 8,
+    ...TYPOGRAPHY.button,
+    color: COLORS.white,
+    marginLeft: SPACING.sm,
+  },
+  backButtonText: {
+    color: COLORS.textPrimary,
   },
 });

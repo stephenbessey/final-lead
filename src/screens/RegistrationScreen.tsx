@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, Pressable, TextInput, ScrollView } from 'react-
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../App';
 import { AppHeader } from '../components/AppHeader';
-import { validateZipCode } from '../validation/zipCodeValidation';
 
 type RegistrationScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Registration'>;
 
@@ -52,46 +51,46 @@ const RegistrationScreen: React.FC<Props> = ({ navigation }) => {
       
       <ScrollView style={styles.content}>
         <Text style={styles.title}>Choose Your Plan</Text>
-        <Text style={styles.subtitle}>Select monthly credits and target area</Text>
+        <Text style={styles.subtitle}>
+          Select the plan that best fits your lead generation needs
+        </Text>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Monthly Credit Tiers</Text>
+        <View style={styles.tiersContainer}>
           {PRICING_TIERS.map((tier) => (
             <Pressable
               key={tier.name}
               style={[
                 styles.tierCard,
-                selectedTier === tier.name && styles.tierCardSelected,
+                selectedTier === tier.name && styles.selectedTier,
               ]}
               onPress={() => setSelectedTier(tier.name)}
-              android_ripple={{ color: '#E3F2FD' }}
             >
-              <View style={styles.tierHeader}>
-                <Text style={styles.tierName}>{tier.name}</Text>
-                <Text style={styles.tierPrice}>${tier.price}/mo</Text>
-              </View>
-              <Text style={styles.tierCredits}>{tier.credits} leads per month</Text>
+              <Text style={styles.tierName}>{tier.name}</Text>
+              <Text style={styles.tierCredits}>{tier.credits} Credits</Text>
+              <Text style={styles.tierPrice}>${tier.price}/month</Text>
             </Pressable>
           ))}
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Target Zip Code</Text>
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>ZIP Code</Text>
           <TextInput
             style={styles.input}
             value={zipCode}
             onChangeText={setZipCode}
-            placeholder="Enter target zip code"
+            placeholder="Enter your ZIP code"
             keyboardType="numeric"
-            maxLength={5}
+            maxLength={10}
           />
         </View>
 
         <Pressable
-          style={[styles.continueButton, !zipCode.trim() && styles.continueButtonDisabled]}
+          style={[
+            styles.continueButton,
+            !zipCode.trim() && styles.disabledButton,
+          ]}
           onPress={handleContinue}
           disabled={!zipCode.trim()}
-          android_ripple={{ color: '#1976D2' }}
         >
           <Text style={styles.continueButtonText}>Continue</Text>
         </Pressable>
@@ -123,51 +122,45 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 32,
   },
-  section: {
+  tiersContainer: {
     marginBottom: 32,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#424242',
-    marginBottom: 16,
   },
   tierCard: {
     backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 12,
+    padding: 20,
+    borderRadius: 12,
+    marginBottom: 16,
     borderWidth: 2,
     borderColor: '#E0E0E0',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
   },
-  tierCardSelected: {
+  selectedTier: {
     borderColor: '#2196F3',
     backgroundColor: '#E3F2FD',
   },
-  tierHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  tierName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#2196F3',
     marginBottom: 4,
   },
-  tierName: {
+  tierCredits: {
     fontSize: 16,
-    fontWeight: 'bold',
     color: '#424242',
+    marginBottom: 4,
   },
   tierPrice: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: '#4CAF50',
   },
-  tierCredits: {
-    fontSize: 14,
-    color: '#757575',
+  inputContainer: {
+    marginBottom: 32,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#424242',
+    marginBottom: 8,
   },
   input: {
     borderWidth: 1,
@@ -179,19 +172,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   continueButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#2196F3',
     paddingVertical: 16,
     borderRadius: 8,
-    marginTop: 16,
+    alignItems: 'center',
   },
-  continueButtonDisabled: {
+  disabledButton: {
     backgroundColor: '#BDBDBD',
   },
   continueButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
-    textAlign: 'center',
   },
 });
 

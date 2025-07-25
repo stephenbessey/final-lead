@@ -14,6 +14,7 @@ export interface Lead {
 export type LifeEvent = 'baby' | 'death' | 'married' | 'house-sold' | 'divorced';
 export type ClientType = 'buyer' | 'seller';
 export type PriceRange = '$' | '$$' | '$$$';
+export type ContactMethod = 'phone' | 'sms' | 'email';
 
 export interface PricingTier {
   readonly name: TierName;
@@ -64,6 +65,16 @@ export interface LoginForm {
 export interface RegistrationForm {
   selectedTier: TierName;
   zipCode: string;
+}
+
+export interface ContactInfo {
+  phone: string;
+  email: string;
+  address?: string;
+}
+
+export interface ContactActionProps {
+  onContactAction: (method: ContactMethod) => void;
 }
 
 export type DeepPartial<T> = {

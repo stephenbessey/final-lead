@@ -1,132 +1,186 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Pressable, TextInput } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  TextInput, 
+  Pressable, 
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView
+} from 'react-native';
 import { useAuth } from '../context/AuthContext';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../../App';
+import { RootStackScreenProps } from '../types/navigation';
+import { COLORS, TYPOGRAPHY, SPACING, SHADOWS } from '../constants/theme';
 
-type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
-
-interface Props {
-  navigation: LoginScreenNavigationProp;
-}
+type Props = RootStackScreenProps<'Login'>;
 
 const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const [username, setUsername] = useState('');
-  const { login, isAuthenticated } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const { login } = useAuth();
 
-  const handleContinue = (): void => {
-    if (username.trim()) {
-      login(username);
-      const hasRegistered = Math.random() > 0.5;
-      
-      if (hasRegistered) {
-        navigation.navigate('GenerateLead');
-      } else {
-        navigation.navigate('Registration');
-      }
+  const isValidUsername = useCallback((name: string): boolean => {
+    return name.trim().length >= 3;
+  }, []);
+
+  const handleLogin = useCallback(async (): Promise<void> => {
+    if (!isValidUsername(username)) {
+      Alert.alert('Invalid Username', 'Username must be at least 3 characters long.');
+      return;
     }
-  };
+
+    try {
+      setIsLoading(true);
+      
+      // Simulate login delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      login(username.trim());
+      navigation.navigate('Registration');
+    } catch (error) {
+      Alert.alert('Login Failed', 'Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [username, login, navigation, isValidUsername]);
+
+  const handleUsernameChange = useCallback((text: string): void => {
+    setUsername(text);
+  }, []);
+
+  const isButtonDisabled = !isValidUsername(username) || isLoading;
 
   return (
-    <View style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.title}>Real Estate Lead Generator</Text>
-        <Text style={styles.subtitle}>Welcome Back!</Text>
-        
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Username</Text>
-          <TextInput
-            style={styles.input}
-            value={username}
-            onChangeText={setUsername}
-            placeholder="Enter your username"
-            autoCapitalize="none"
-          />
+    <KeyboardAvoidingView 
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.content}>
+          <View style={styles.header}>
+            <Text style={styles.title}>Lead Generator</Text>
+            <Text style={styles.subtitle}>Welcome Back</Text>
+          </View>
+
+          <View style={styles.form}>
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Username</Text>
+              <TextInput
+                style={styles.input}
+                value={username}
+                onChangeText={handleUsernameChange}
+                placeholder="Enter your username"
+                placeholderTextColor={COLORS.textHint}
+                autoCapitalize="none"
+                autoCorrect={false}
+                returnKeyType="done"
+                onSubmitEditing={handleLogin}
+                editable={!isLoading}
+              />
+            </View>
+
+            <Pressable
+              style={[
+                styles.button,
+                isButtonDisabled && styles.buttonDisabled,
+              ]}
+              onPress={handleLogin}
+              disabled={isButtonDisabled}
+              android_ripple={{ color: COLORS.primaryDark }}
+            >
+              <Text style={styles.buttonText}>
+                {isLoading ? 'Logging in...' : 'Continue'}
+              </Text>
+            </Pressable>
+          </View>
+
+          <View style={styles.footer}>
+            <Text style={styles.description}>
+              Generate high-quality leads based on life events and property data.
+              Start your real estate prospecting journey today.
+            </Text>
+          </View>
         </View>
-
-        <Pressable
-          style={[styles.button, !username.trim() && styles.buttonDisabled]}
-          onPress={handleContinue}
-          disabled={!username.trim()}
-          android_ripple={{ color: '#1976D2' }}
-        >
-          <Text style={styles.buttonText}>Continue</Text>
-        </Pressable>
-
-        <Text style={styles.description}>
-          Generate high-quality real estate leads based on life events and market indicators.
-        </Text>
-      </View>
-    </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: COLORS.background,
+  },
+  scrollContent: {
+    flexGrow: 1,
     justifyContent: 'center',
-    paddingHorizontal: 24,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.xl,
   },
   content: {
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.surface,
     borderRadius: 12,
-    padding: 24,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    padding: SPACING.xl,
+    ...SHADOWS.medium,
+  },
+  header: {
+    alignItems: 'center',
+    marginBottom: SPACING.xl,
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#2196F3',
-    textAlign: 'center',
-    marginBottom: 8,
+    ...TYPOGRAPHY.headline,
+    color: COLORS.primary,
+    marginBottom: SPACING.xs,
   },
   subtitle: {
-    fontSize: 18,
-    color: '#757575',
-    textAlign: 'center',
-    marginBottom: 32,
+    ...TYPOGRAPHY.title,
+    color: COLORS.textSecondary,
+  },
+  form: {
+    marginBottom: SPACING.xl,
   },
   inputContainer: {
-    marginBottom: 24,
+    marginBottom: SPACING.lg,
   },
   label: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#424242',
-    marginBottom: 8,
+    ...TYPOGRAPHY.subtitle,
+    color: COLORS.textPrimary,
+    marginBottom: SPACING.sm,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: COLORS.divider,
     borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
-    backgroundColor: '#FAFAFA',
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.md,
+    ...TYPOGRAPHY.body,
+    backgroundColor: COLORS.background,
   },
   button: {
-    backgroundColor: '#2196F3',
-    paddingVertical: 16,
+    backgroundColor: COLORS.primary,
+    paddingVertical: SPACING.md,
     borderRadius: 8,
-    marginBottom: 24,
+    alignItems: 'center',
+    ...SHADOWS.small,
   },
   buttonDisabled: {
-    backgroundColor: '#BDBDBD',
+    backgroundColor: COLORS.textHint,
   },
   buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-    textAlign: 'center',
+    ...TYPOGRAPHY.button,
+    color: COLORS.white,
+  },
+  footer: {
+    alignItems: 'center',
   },
   description: {
-    fontSize: 14,
-    color: '#757575',
+    ...TYPOGRAPHY.bodySmall,
+    color: COLORS.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
   },

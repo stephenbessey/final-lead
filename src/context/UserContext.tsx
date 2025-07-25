@@ -41,10 +41,8 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
       setIsLoading(true);
       setError(null);
       
-      // Simulate async operation (e.g., API call)
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      // Validate data before updating
       if (data.credits !== undefined && data.credits < 0) {
         throw new Error('Credits cannot be negative');
       }
@@ -57,7 +55,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to update user data';
       setError(errorMessage);
-      throw err; // Re-throw to allow calling components to handle
+      throw err;
     } finally {
       setIsLoading(false);
     }
@@ -72,7 +70,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
 
       setUserData(prev => ({ 
         ...prev, 
-        credits: Math.max(0, prev.credits - 1) // Ensure credits never go below 0
+        credits: Math.max(0, prev.credits - 1)
       }));
       
       setError(null);
