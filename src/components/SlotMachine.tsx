@@ -1,126 +1,79 @@
-import React, { useEffect, useRef, useCallback } from 'react';
-import { View, Text, StyleSheet, Animated, Pressable } from 'react-native';
-import { Lead } from '../types';
-import { generateRandomLead } from '../utils/leadGenerator';
-import { COLORS, TYPOGRAPHY, SPACING, SHADOWS } from '../constants/theme';
-
-interface SlotMachineProps {
-  isSpinning: boolean;
-  onResult: (lead: Lead) => void;
-  onGeneratePress: () => void;
-  disabled?: boolean;
-  duration?: number;
-}
-
-const ANIMATION_DURATION = 3000;
-const GENERATION_DELAY = 2500;
+import React, { useCallback, useRef, useEffect } from 'react';
+import { View, Text, StyleSheet, Animated } from 'react-native';
+import { SlotMachineProps } from '../types/slotMachine';
+import { useMachineEffects } from '../hooks/useMachineEffects';
+import { useLead } from '../hooks/useLead';
+import { generateRandomFinalIndices } from '../utils/slotMachineHelpers';
+import { Reel } from './SlotMachine/Reel';
+import { SlotMachineFrame } from './SlotMachine/SlotMachineFrame';
+import { GenerateButton } from './SlotMachine/GenerateButton';
+import { COLORS, TYPOGRAPHY, SPACING } from '../constants/theme';
+import { SLOT_MACHINE_CONFIG, SLOT_MACHINE_TEXTS, SLOT_MACHINE_EMOJIS } from '../constants/slotMachine';
 
 export const SlotMachine: React.FC<SlotMachineProps> = ({ 
   isSpinning, 
   onResult,
   onGeneratePress,
   disabled = false,
-  duration = ANIMATION_DURATION,
+  duration = SLOT_MACHINE_CONFIG.animation.duration,
 }) => {
-  const spinValue = useRef(new Animated.Value(0)).current;
-  const scaleValue = useRef(new Animated.Value(1)).current;
+  const { scaleValue, pulseValue } = useMachineEffects(isSpinning, duration);
+  const finalIndices = useRef<number[]>([0, 0, 0]);
 
-  const generateLead = useCallback((): void => {
-    setTimeout(() => {
-      const lead = generateRandomLead();
-      onResult(lead);
-    }, GENERATION_DELAY);
-  }, [onResult]);
+  const handleIndicesGenerated = useCallback((indices: number[]) => {
+    finalIndices.current = indices;
+  }, []);
 
-  const startSpinAnimation = useCallback((): void => {
-    spinValue.setValue(0);
-    scaleValue.setValue(1);
-
-    Animated.parallel([
-      Animated.timing(spinValue, {
-        toValue: 1,
-        duration,
-        useNativeDriver: true,
-      }),
-      Animated.sequence([
-        Animated.timing(scaleValue, {
-          toValue: 1.1,
-          duration: duration / 4,
-          useNativeDriver: true,
-        }),
-        Animated.timing(scaleValue, {
-          toValue: 1,
-          duration: duration / 4,
-          useNativeDriver: true,
-        }),
-      ]),
-    ]).start();
-  }, [spinValue, scaleValue, duration]);
+  const { generateLeadWithDelay } = useLead(onResult, handleIndicesGenerated);
 
   useEffect(() => {
     if (isSpinning) {
-      startSpinAnimation();
-      generateLead();
-    } else {
-      spinValue.setValue(0);
-      scaleValue.setValue(1);
+      generateLeadWithDelay();
     }
-  }, [isSpinning, startSpinAnimation, generateLead, spinValue, scaleValue]);
+  }, [isSpinning, generateLeadWithDelay]);
 
-  const opacity = spinValue.interpolate({
-    inputRange: [0, 0.3, 0.7, 1],
-    outputRange: [1, 0.3, 0.3, 1],
-  });
+  const handleGeneratePress = useCallback(() => {
+    onGeneratePress();
+  }, [onGeneratePress]);
 
-  const rotation = spinValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '360deg'],
-  });
-
-  const getButtonText = (): string => {
-    if (disabled) return 'No Credits';
-    if (isSpinning) return 'Generating...';
-    return 'Generate Lead';
-  };
-
-  const getButtonStyle = () => [
-    styles.generateButton,
-    disabled && styles.generateButtonDisabled,
-    isSpinning && styles.generateButtonSpinning,
+  const reelEmojis = [
+    SLOT_MACHINE_EMOJIS.lifeEvents,
+    SLOT_MACHINE_EMOJIS.priceRanges,
+    SLOT_MACHINE_EMOJIS.clientTypes,
   ];
 
   return (
     <View style={styles.container}>
       <Animated.View style={[
-        styles.slotContainer,
+        styles.machineContainer,
         {
-          opacity,
-          transform: [
-            { scale: scaleValue },
-            { rotate: rotation },
-          ],
-        },
+          transform: [{ scale: scaleValue }]
+        }
       ]}>
-        <Text style={styles.slotText}>🎰</Text>
+        <SlotMachineFrame>
+          {reelEmojis.map((emojis, index) => (
+            <Reel
+              key={index}
+              emojis={emojis}
+              isSpinning={isSpinning}
+              duration={duration}
+              delay={index * SLOT_MACHINE_CONFIG.animation.reelStaggerDelay}
+              finalIndex={finalIndices.current[index]}
+            />
+          ))}
+        </SlotMachineFrame>
       </Animated.View>
 
-      <Pressable
-        style={getButtonStyle()}
-        onPress={onGeneratePress}
-        disabled={disabled || isSpinning}
-        android_ripple={{ color: COLORS.primaryDark }}
-      >
-        <Text style={[
-          styles.buttonText,
-          disabled && styles.buttonTextDisabled,
-        ]}>
-          {getButtonText()}
-        </Text>
-      </Pressable>
+      <GenerateButton
+        disabled={disabled}
+        isSpinning={isSpinning}
+        onPress={handleGeneratePress}
+        pulseValue={pulseValue}
+      />
 
       {isSpinning && (
         <Text style={styles.statusText}>
-          Finding your perfect lead...
+          {SLOT_MACHINE_TEXTS.statusMessage}
         </Text>
       )}
     </View>
@@ -131,47 +84,16 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     justifyContent: 'center',
-    padding: SPACING.xl,
+    padding: SPACING.lg,
+    flex: 1,
   },
-  slotContainer: {
-    width: 120,
-    height: 120,
-    backgroundColor: COLORS.surface,
-    borderRadius: 60,
-    justifyContent: 'center',
-    alignItems: 'center',
+  machineContainer: {
     marginBottom: SPACING.xl,
-    ...SHADOWS.medium,
-  },
-  slotText: {
-    fontSize: 48,
-  },
-  generateButton: {
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: SPACING.xl,
-    paddingVertical: SPACING.md,
-    borderRadius: 25,
-    minWidth: 200,
-    alignItems: 'center',
-    ...SHADOWS.small,
-  },
-  generateButtonDisabled: {
-    backgroundColor: COLORS.textHint,
-  },
-  generateButtonSpinning: {
-    backgroundColor: COLORS.primaryDark,
-  },
-  buttonText: {
-    ...TYPOGRAPHY.button,
-    color: COLORS.white,
-  },
-  buttonTextDisabled: {
-    color: COLORS.white,
   },
   statusText: {
     ...TYPOGRAPHY.bodySmall,
     color: COLORS.textSecondary,
-    marginTop: SPACING.md,
+    marginTop: SPACING.lg,
     textAlign: 'center',
   },
 });

@@ -1,15 +1,11 @@
 import 'react-native-gesture-handler/jestSetup';
 
-// Mock react-native-reanimated
 jest.mock('react-native-reanimated', () => {
   const Reanimated = require('react-native-reanimated/mock');
-  // The mock for `call` immediately calls the callback which is incorrect
-  // So we override it with a no-op
   Reanimated.default.call = () => {};
   return Reanimated;
 });
 
-// Mock Animated API
 jest.mock('react-native/Libraries/Animated/Animated', () => {
   const ActualAnimated = jest.requireActual('react-native/Libraries/Animated/Animated');
   return {
@@ -32,7 +28,6 @@ jest.mock('react-native/Libraries/Animated/Animated', () => {
   };
 });
 
-// Mock AsyncStorage
 jest.mock('@react-native-async-storage/async-storage', () => ({
   getItem: jest.fn(() => Promise.resolve(null)),
   setItem: jest.fn(() => Promise.resolve()),
@@ -40,7 +35,6 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
   clear: jest.fn(() => Promise.resolve()),
 }));
 
-// Mock Expo modules
 jest.mock('expo-clipboard', () => ({
   setStringAsync: jest.fn(() => Promise.resolve()),
   getStringAsync: jest.fn(() => Promise.resolve('')),
@@ -50,7 +44,6 @@ jest.mock('@expo/vector-icons', () => ({
   Ionicons: 'Ionicons',
 }));
 
-// Mock React Navigation
 jest.mock('@react-navigation/native', () => ({
   ...jest.requireActual('@react-navigation/native'),
   useNavigation: () => ({
@@ -63,19 +56,15 @@ jest.mock('@react-navigation/native', () => ({
   }),
 }));
 
-// Mock Linking
 jest.mock('react-native/Libraries/Linking/Linking', () => ({
   openURL: jest.fn(() => Promise.resolve()),
   canOpenURL: jest.fn(() => Promise.resolve(true)),
 }));
 
-// Mock Alert
 jest.mock('react-native/Libraries/Alert/Alert', () => ({
   alert: jest.fn(),
 }));
 
-// Silence the warning about timers
 jest.useFakeTimers();
 
-// Global test timeout
 jest.setTimeout(10000);

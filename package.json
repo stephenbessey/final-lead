@@ -15,18 +15,18 @@
   },
   "dependencies": {
     "@expo/vector-icons": "^14.0.0",
+    "@react-native-async-storage/async-storage": "^2.1.2",
     "@react-navigation/native": "^6.1.18",
     "@react-navigation/stack": "^6.4.1",
     "expo": "~53.0.20",
-    "expo-clipboard": "~6.0.0",
+    "expo-clipboard": "~7.1.5",
     "expo-status-bar": "~2.2.3",
     "react": "19.0.0",
     "react-native": "0.79.5",
-    "react-native-gesture-handler": "~2.22.0",
-    "react-native-reanimated": "~3.16.7",
-    "react-native-safe-area-context": "5.1.0",
-    "react-native-screens": "~4.8.0",
-    "@react-native-async-storage/async-storage": "^1.23.0"
+    "react-native-gesture-handler": "~2.24.0",
+    "react-native-reanimated": "~3.17.5",
+    "react-native-safe-area-context": "^5.4.0",
+    "react-native-screens": "~4.11.1"
   },
   "devDependencies": {
     "@babel/core": "^7.28.0",
@@ -44,20 +44,27 @@
     "react": "19.0.0",
     "react-dom": "19.0.0"
   },
-  "expo": {
-    "install": {
-      "exclude": [
-        "react-native",
-        "react-native-reanimated"
-      ]
-    }
-  },
   "jest": {
     "preset": "react-native",
-    "setupFilesAfterEnv": ["<rootDir>/jest.setup.js"],
-    "moduleFileExtensions": ["ts", "tsx", "js", "jsx", "json"],
+    "setupFilesAfterEnv": [
+      "<rootDir>/jest.setup.js"
+    ],
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json"
+    ],
     "transform": {
-      "^.+\\.(js|jsx|ts|tsx)$": ["babel-jest", { "presets": ["module:metro-react-native-babel-preset"] }]
+      "^.+\\.(js|jsx|ts|tsx)$": [
+        "babel-jest",
+        {
+          "presets": [
+            "module:metro-react-native-babel-preset"
+          ]
+        }
+      ]
     },
     "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
     "moduleNameMapping": {

@@ -38,7 +38,6 @@ const RegistrationScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   const handleProfilePress = (): void => {
-    // Profile functionality
   };
 
   return (

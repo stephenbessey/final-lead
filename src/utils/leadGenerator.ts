@@ -103,7 +103,7 @@ export const generateRandomLead = (): Lead => {
     lifeEvent: getRandomLifeEvent(),
     clientType: getRandomClientType(),
     priceRange: getRandomPriceRange(),
-    createdAt: new Date(),
+    createdAt: new Date().toISOString(), 
   };
 };
 
@@ -127,6 +127,12 @@ export const formatLeadForExport = (lead: Lead): string => {
     '$$$': 'Premium',
   };
 
+  const createdDate = lead.createdAt 
+    ? (typeof lead.createdAt === 'string' 
+        ? new Date(lead.createdAt).toLocaleDateString()
+        : lead.createdAt.toLocaleDateString())
+    : 'Unknown';
+
   return `
 Lead Information:
 Name: ${lead.name}
@@ -137,6 +143,6 @@ Property Value: ${lead.propertyValue}
 Life Event: ${lifeEventLabels[lead.lifeEvent]}
 Client Type: ${clientTypeLabels[lead.clientType]}
 Price Range: ${priceRangeLabels[lead.priceRange]}
-Generated: ${lead.createdAt?.toLocaleDateString() || 'Unknown'}
+Generated: ${createdDate}
 `.trim();
 };
