@@ -1,12 +1,11 @@
-import React, { useCallback } from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView, Alert } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import React, { useState, useCallback, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TextInput, Pressable, Alert } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../../App';
-import { ResponsiveLayout } from '../components/ResponsiveLayout';
-import { useAuth } from '../context/AuthContext';
 import { useUser } from '../context/UserContext';
-import { useSmoothNavigation } from '../hooks/useSmoothNavigation';
+import { AppHeader } from '../components/AppHeader';
+import { LoadingOverlay } from '../components/LoadingOverlay';
+import { validateZipCode } from '../validation/zipCodeValidation';
+import { RootStackParamList } from '../../App';
 import { COLORS, TYPOGRAPHY, SPACING, SHADOWS } from '../constants/theme';
 
 type SettingsScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Settings'>;
@@ -16,153 +15,176 @@ interface Props {
 }
 
 const SettingsScreen: React.FC<Props> = ({ navigation }) => {
-  const { currentUser, logout } = useAuth();
-  const { credits, plan, zipCode } = useUser();
-  const { navigateImmediately } = useSmoothNavigation(navigation);
+  const { userData, saveZipCode, isLoading, error } = useUser();
+  
+  const [zipCode, setZipCode] = useState(userData.zipCode || '');
+  const [zipCodeError, setZipCodeError] = useState<string | null>(null);
+  const [isUpdatingZip, setIsUpdatingZip] = useState(false);
 
-  const handleUpgradePlan = useCallback(() => {
-    Alert.alert('Upgrade Plan', 'This feature is coming soon!');
+  useEffect(() => {
+    if (userData.zipCode && userData.zipCode !== zipCode) {
+      setZipCode(userData.zipCode);
+    }
+  }, [userData.zipCode]);
+
+  const handleSaveZipCode = useCallback(async (): Promise<void> => {
+    try {
+      setZipCodeError(null);
+      
+      const validation = validateZipCode(zipCode.trim());
+      if (!validation.isValid) {
+        setZipCodeError(validation.errors[0]);
+        return;
+      }
+
+      setIsUpdatingZip(true);
+      await saveZipCode(zipCode.trim());
+      
+      Alert.alert(
+        'Success',
+        'ZIP code has been saved successfully.',
+        [{ text: 'OK' }]
+      );
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to save ZIP code';
+      Alert.alert('Error', errorMessage);
+    } finally {
+      setIsUpdatingZip(false);
+    }
+  }, [zipCode, saveZipCode]);
+
+  const handleBackPress = useCallback((): void => {
+    navigation.goBack();
+  }, [navigation]);
+
+  const handleProfilePress = useCallback((): void => {
+    Alert.alert('Profile', 'Profile functionality coming soon!');
   }, []);
 
-  const handleSupport = useCallback(() => {
-    Alert.alert('Support', 'Contact support at support@leadgen.com');
-  }, []);
-
-  const handleLogout = useCallback(() => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Logout', 
-          style: 'destructive',
-          onPress: () => {
-            logout();
-            navigateImmediately('Login');
-          }
-        },
-      ]
-    );
-  }, [logout, navigateImmediately]);
-
-  const handleBackToApp = useCallback(() => {
-    navigateImmediately('GenerateLead');
-  }, [navigateImmediately]);
+  const hasZipCodeChanges = zipCode.trim() !== (userData.zipCode || '');
 
   return (
-    <ResponsiveLayout scrollable edges={['top', 'left', 'right', 'bottom']}>
-      <View style={styles.header}>
-        <Pressable style={styles.backButton} onPress={handleBackToApp}>
-          <Ionicons name="arrow-back" size={24} color={COLORS.primary} />
-        </Pressable>
-        <Text style={styles.title}>Settings</Text>
-        <View style={styles.placeholder} />
-      </View>
-
+    <View style={styles.container}>
+      <AppHeader 
+        onMenuPress={handleBackPress}
+        onProfilePress={handleProfilePress}
+        showCredits={true}
+        credits={userData.credits}
+        title="Settings"
+      />
+      
       <ScrollView style={styles.content}>
-        {/* User Info Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Account Information</Text>
           
           <View style={styles.infoCard}>
-            <Text style={styles.infoLabel}>Name</Text>
-            <Text style={styles.infoValue}>{currentUser?.name || 'Not available'}</Text>
-          </View>
-
-          <View style={styles.infoCard}>
-            <Text style={styles.infoLabel}>Email</Text>
-            <Text style={styles.infoValue}>{currentUser?.email || 'Not available'}</Text>
-          </View>
-
-          <View style={styles.infoCard}>
-            <Text style={styles.infoLabel}>Plan</Text>
-            <Text style={styles.infoValue}>{plan}</Text>
-          </View>
-
-          <View style={styles.infoCard}>
-            <Text style={styles.infoLabel}>Credits Remaining</Text>
-            <Text style={styles.infoValue}>{credits}</Text>
-          </View>
-
-          <View style={styles.infoCard}>
-            <Text style={styles.infoLabel}>Target ZIP Code</Text>
-            <Text style={styles.infoValue}>{zipCode || 'Not set'}</Text>
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Plan:</Text>
+              <Text style={styles.infoValue}>{userData.tier || 'No Plan'}</Text>
+            </View>
+            
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Credits:</Text>
+              <Text style={styles.infoValue}>{userData.credits}</Text>
+            </View>
+            
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Monthly Price:</Text>
+              <Text style={styles.infoValue}>
+                {userData.monthlyPrice ? `$${userData.monthlyPrice.toFixed(2)}` : 'N/A'}
+              </Text>
+            </View>
           </View>
         </View>
 
-        {/* Actions Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Actions</Text>
+          <Text style={styles.sectionTitle}>Location Settings</Text>
           
-          <Pressable style={styles.actionButton} onPress={handleUpgradePlan}>
-            <Ionicons name="trending-up" size={24} color="#4CAF50" />
-            <Text style={styles.actionText}>Upgrade Plan</Text>
-            <Ionicons name="chevron-forward" size={20} color="#757575" />
-          </Pressable>
-
-          <Pressable style={styles.actionButton} onPress={handleSupport}>
-            <Ionicons name="help-circle" size={24} color="#2196F3" />
-            <Text style={styles.actionText}>Support</Text>
-            <Ionicons name="chevron-forward" size={20} color="#757575" />
-          </Pressable>
-
-          <Pressable style={styles.actionButton} onPress={handleLogout}>
-            <Ionicons name="log-out" size={24} color="#F44336" />
-            <Text style={[styles.actionText, { color: '#F44336' }]}>Logout</Text>
-            <Ionicons name="chevron-forward" size={20} color="#757575" />
-          </Pressable>
+          <View style={styles.inputCard}>
+            <Text style={styles.inputLabel}>ZIP Code</Text>
+            <TextInput
+              style={[
+                styles.input,
+                zipCodeError && styles.inputError,
+              ]}
+              value={zipCode}
+              onChangeText={(text) => {
+                setZipCode(text);
+                setZipCodeError(null);
+              }}
+              placeholder="Enter your ZIP code"
+              keyboardType="numeric"
+              maxLength={10}
+              autoCapitalize="none"
+            />
+            
+            {zipCodeError && (
+              <Text style={styles.errorText}>{zipCodeError}</Text>
+            )}
+            
+            {hasZipCodeChanges && (
+              <Pressable
+                style={[
+                  styles.saveButton,
+                  isUpdatingZip && styles.saveButtonDisabled,
+                ]}
+                onPress={handleSaveZipCode}
+                disabled={isUpdatingZip}
+              >
+                <Text style={styles.saveButtonText}>
+                  {isUpdatingZip ? 'Saving...' : 'Save ZIP Code'}
+                </Text>
+              </Pressable>
+            )}
+            
+            {!hasZipCodeChanges && userData.zipCode && (
+              <Text style={styles.savedText}>✓ ZIP code saved</Text>
+            )}
+          </View>
         </View>
+
+        {error && (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>{error}</Text>
+          </View>
+        )}
       </ScrollView>
-    </ResponsiveLayout>
+
+      <LoadingOverlay visible={isLoading} />
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
-    backgroundColor: COLORS.white,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-    ...SHADOWS.small,
-  },
-  backButton: {
-    padding: SPACING.sm,
-    borderRadius: 20,
-  },
-  title: {
-    ...TYPOGRAPHY.headline,
-    color: COLORS.primary,
-  },
-  placeholder: {
-    width: 40,
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.background,
   },
   content: {
     flex: 1,
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
+    padding: SPACING.lg,
   },
   section: {
     marginBottom: SPACING.xl,
   },
   sectionTitle: {
-    ...TYPOGRAPHY.headline,
+    ...TYPOGRAPHY.h3,
     color: COLORS.textPrimary,
     marginBottom: SPACING.md,
   },
   infoCard: {
     backgroundColor: COLORS.white,
-    borderRadius: 8,
-    padding: SPACING.md,
-    marginBottom: SPACING.sm,
+    borderRadius: 12,
+    padding: SPACING.lg,
+    ...SHADOWS.small,
+  },
+  infoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    ...SHADOWS.small,
+    paddingVertical: SPACING.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
   },
   infoLabel: {
     ...TYPOGRAPHY.body,
@@ -171,22 +193,62 @@ const styles = StyleSheet.create({
   infoValue: {
     ...TYPOGRAPHY.body,
     color: COLORS.textPrimary,
-    fontWeight: '500',
+    fontWeight: '600',
   },
-  actionButton: {
+  inputCard: {
     backgroundColor: COLORS.white,
-    borderRadius: 8,
-    padding: SPACING.md,
-    marginBottom: SPACING.sm,
-    flexDirection: 'row',
-    alignItems: 'center',
+    borderRadius: 12,
+    padding: SPACING.lg,
     ...SHADOWS.small,
   },
-  actionText: {
+  inputLabel: {
+    ...TYPOGRAPHY.bodySmall,
+    color: COLORS.textSecondary,
+    marginBottom: SPACING.sm,
+    fontWeight: '500',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 8,
+    padding: SPACING.md,
     ...TYPOGRAPHY.body,
     color: COLORS.textPrimary,
-    flex: 1,
-    marginLeft: SPACING.md,
+  },
+  inputError: {
+    borderColor: COLORS.error,
+  },
+  saveButton: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 8,
+    padding: SPACING.md,
+    marginTop: SPACING.md,
+    alignItems: 'center',
+  },
+  saveButtonDisabled: {
+    backgroundColor: COLORS.textHint,
+  },
+  saveButtonText: {
+    ...TYPOGRAPHY.button,
+    color: COLORS.white,
+  },
+  savedText: {
+    ...TYPOGRAPHY.bodySmall,
+    color: COLORS.success,
+    marginTop: SPACING.sm,
+    textAlign: 'center',
+    fontWeight: '500',
+  },
+  errorContainer: {
+    backgroundColor: COLORS.errorLight,
+    borderRadius: 8,
+    padding: SPACING.md,
+    marginTop: SPACING.md,
+  },
+  errorText: {
+    ...TYPOGRAPHY.bodySmall,
+    color: COLORS.error,
+    textAlign: 'center',
   },
 });
 

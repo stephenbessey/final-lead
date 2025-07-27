@@ -1,55 +1,80 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { Lead } from '../types';
-import { COLORS, TYPOGRAPHY, SPACING } from '../constants/theme';
+import { COLORS, TYPOGRAPHY, SPACING, SHADOWS } from '../constants/theme';
 
 interface LeadContactInfoProps {
   lead: Lead;
 }
 
-export const LeadContactInfo: React.FC<LeadContactInfoProps> = ({ lead }) => (
-  <View style={styles.container}>
-    <Text style={styles.title}>Contact Information</Text>
-    
-    <View style={styles.infoRow}>
-      <Ionicons name="call" size={20} color={COLORS.primary} />
-      <Text style={styles.infoText}>{lead.phone}</Text>
+export const LeadContactInfo: React.FC<LeadContactInfoProps> = ({
+  lead,
+}) => {
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Contact Information</Text>
+      
+      <View style={styles.infoGrid}>
+        <View style={styles.infoItem}>
+          <Text style={styles.label}>📞 Phone:</Text>
+          <Text style={styles.value}>{lead.phone}</Text>
+        </View>
+        
+        <View style={styles.infoItem}>
+          <Text style={styles.label}>✉️ Email:</Text>
+          <Text style={styles.value}>{lead.email}</Text>
+        </View>
+        
+        <View style={styles.infoItem}>
+          <Text style={styles.label}>🏠 Address:</Text>
+          <Text style={styles.value}>{lead.address}</Text>
+        </View>
+        
+        {lead.createdAt && (
+          <View style={styles.infoItem}>
+            <Text style={styles.label}>📅 Generated:</Text>
+            <Text style={styles.value}>
+              {lead.createdAt instanceof Date 
+                ? lead.createdAt.toLocaleDateString()
+                : new Date(lead.createdAt).toLocaleDateString()
+              }
+            </Text>
+          </View>
+        )}
+      </View>
     </View>
-    
-    <View style={styles.infoRow}>
-      <Ionicons name="mail" size={20} color={COLORS.primary} />
-      <Text style={styles.infoText}>{lead.email}</Text>
-    </View>
-    
-    <View style={styles.infoRow}>
-      <Ionicons name="location" size={20} color={COLORS.primary} />
-      <Text style={styles.infoText}>{lead.address}</Text>
-    </View>
-  </View>
-);
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: COLORS.surface,
-    padding: SPACING.lg,
+    backgroundColor: COLORS.white,
     borderRadius: 12,
-    marginBottom: SPACING.md,
+    padding: SPACING.lg,
+    marginBottom: SPACING.lg,
+    ...SHADOWS.small,
   },
   title: {
-    ...TYPOGRAPHY.title,
+    ...TYPOGRAPHY.h3,
     color: COLORS.textPrimary,
     marginBottom: SPACING.md,
   },
-  infoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: SPACING.sm,
+  infoGrid: {
+    gap: SPACING.md,
   },
-  infoText: {
+  infoItem: {
+    paddingBottom: SPACING.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  label: {
+    ...TYPOGRAPHY.bodySmall,
+    color: COLORS.textSecondary,
+    marginBottom: SPACING.xs,
+  },
+  value: {
     ...TYPOGRAPHY.body,
     color: COLORS.textPrimary,
-    marginLeft: SPACING.md,
-    flex: 1,
+    fontWeight: '500',
   },
 });

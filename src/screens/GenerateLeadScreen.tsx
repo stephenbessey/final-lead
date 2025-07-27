@@ -1,99 +1,93 @@
-import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, Animated, Alert } from 'react-native';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../../App';
-import { ResponsiveLayout } from '../components/ResponsiveLayout';
+import React, { useCallback, useEffect } from 'react';
+import { View, Text, StyleSheet, Alert } from 'react-native';
+import { useUser } from '../context/UserContext';
+import { useButtonState, ButtonState } from '../hooks/useButtonState';
 import { AppHeader } from '../components/AppHeader';
 import { SlotMachine } from '../components/SlotMachine';
+import { LoadingOverlay } from '../components/LoadingOverlay';
 import { ErrorMessage } from '../components/ErrorMessage';
-import { useAuth } from '../hooks/useAuth';
-import { useUser } from '../hooks/useUser';
-import { useSmoothNavigation } from '../hooks/useSmoothNavigation';
+import { RootStackScreenProps } from '../types/navigation';
 import { Lead } from '../types';
 import { COLORS, TYPOGRAPHY, SPACING } from '../constants/theme';
 
-type GenerateLeadScreenNavigationProp = StackNavigationProp<RootStackParamList, 'GenerateLead'>;
-
-interface Props {
-  navigation: GenerateLeadScreenNavigationProp;
-}
+type Props = RootStackScreenProps<'GenerateLead'>;
 
 const GenerateLeadScreen: React.FC<Props> = ({ navigation }) => {
-  const [isSpinning, setIsSpinning] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { userData, useCredit, isLoading, error, resetError, isInitialized } = useUser();
   
-  const { user } = useAuth();
-  const { credits, updateCredits } = useUser();
-  const { navigateWithDelay, navigateImmediately, fadeAnim } = useSmoothNavigation(navigation);
+  const handleGenerate = useCallback((): boolean => {
+    if (userData.credits <= 0) {
+      showOutOfCreditsAlert();
+      return false;
+    }
 
-  const handleMenuPress = useCallback(() => {
-    navigateImmediately('Settings');
-  }, [navigateImmediately]);
+    const canGenerate = useCredit();
+    if (canGenerate) {
+      resetError();
+    }
+    return canGenerate;
+  }, [userData.credits, useCredit, resetError]);
 
-  const handleProfilePress = useCallback(() => {
+  const handleViewDetails = useCallback((lead: Lead): void => {
+    navigation.navigate('LeadDetails', { lead });
+  }, [navigation]);
+
+  const {
+    buttonState,
+    handleGeneratePress,
+    handleLeadGenerated,
+    resetToGenerate,
+    handleViewDetailsPress
+  } = useButtonState(
+    userData.credits > 0,
+    handleGenerate,
+    handleViewDetails
+  );
+
+  useEffect(() => {
+    if (userData.credits <= 0 && buttonState !== ButtonState.NO_CREDITS) {
+      resetToGenerate();
+    }
+  }, [userData.credits, buttonState, resetToGenerate]);
+
+  const showOutOfCreditsAlert = useCallback((): void => {
+    Alert.alert(
+      'Out of Credits',
+      'You have no credits remaining. Would you like to purchase more credits?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Purchase Credits', 
+          onPress: () => navigation.navigate('Settings') 
+        },
+      ]
+    );
+  }, [navigation]);
+
+  const handleMenuPress = useCallback((): void => {
+    navigation.navigate('Settings');
+  }, [navigation]);
+
+  const handleProfilePress = useCallback((): void => {
+    Alert.alert('Profile', 'Profile functionality coming soon!');
   }, []);
 
-  const handleGeneratePress = useCallback(() => {
-    if (credits <= 0) {
-      Alert.alert(
-        'No Credits Available',
-        'You need credits to generate leads. Would you like to upgrade your plan?',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Upgrade', onPress: () => navigateImmediately('Settings') },
-        ]
-      );
-      return;
+  const getCreditWarningMessage = (): string | null => {
+    if (userData.credits <= 0) {
+      return 'You have no credits remaining';
     }
-
-    setError(null);
-    setIsSpinning(true);
-  }, [credits, navigateImmediately]);
-
-  const handleLeadResult = useCallback((lead: Lead) => {
-    try {
-      updateCredits(credits - 1);
-      
-      setIsSpinning(false);
-      
-      Alert.alert(
-        'Lead Generated!',
-        'Your new lead is ready. Would you like to view the details now?',
-        [
-          { 
-            text: 'View Later', 
-            style: 'cancel',
-            onPress: () => {
-            }
-          },
-          { 
-            text: 'View Details', 
-            onPress: () => navigateWithDelay('LeadDetails', { lead }, 500)
-          },
-        ]
-      );
-    } catch (err) {
-      setError('Failed to generate lead. Please try again.');
-      setIsSpinning(false);
+    if (userData.credits <= 3) {
+      return `⚠️ You have ${userData.credits} credit${userData.credits === 1 ? '' : 's'} remaining`;
     }
-  }, [credits, updateCredits, navigateWithDelay]);
-
-  const getCreditWarningLevel = (): 'none' | 'warning' | 'critical' => {
-    if (credits <= 0) return 'critical';
-    if (credits <= 3) return 'warning';
-    return 'none';
+    return null;
   };
 
-  const renderCreditWarning = () => {
-    const warningLevel = getCreditWarningLevel();
+  const renderCreditWarning = (): React.ReactNode => {
+    const warningMessage = getCreditWarningMessage();
+    if (!warningMessage) return null;
+
+    const isCritical = userData.credits <= 0;
     
-    if (warningLevel === 'none') return null;
-
-    const isCritical = warningLevel === 'critical';
-    const message = isCritical 
-      ? 'You have no credits remaining. Upgrade your plan to continue generating leads.'
-      : `You have ${credits} credit${credits === 1 ? '' : 's'} remaining. Consider upgrading soon.`;
-
     return (
       <View style={[
         styles.warningContainer,
@@ -103,62 +97,64 @@ const GenerateLeadScreen: React.FC<Props> = ({ navigation }) => {
           styles.warningText,
           isCritical && styles.criticalWarningText,
         ]}>
-          {message}
+          {warningMessage}
         </Text>
       </View>
     );
   };
 
+  if (!isInitialized) {
+    return <LoadingOverlay visible={true} />;
+  }
+
   return (
-    <ResponsiveLayout scrollable edges={['top', 'left', 'right', 'bottom']}>
-      <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
-        <AppHeader 
-          onMenuPress={handleMenuPress}
-          onProfilePress={handleProfilePress}
-          showCredits={true}
-          credits={credits}
-        />
-        
-        <View style={styles.content}>
-          <Text style={styles.title}>Generate Lead</Text>
-          <Text style={styles.subtitle}>
-            Spin the wheel to discover your next potential client
-          </Text>
+    <View style={styles.container}>
+      <AppHeader 
+        onMenuPress={handleMenuPress}
+        onProfilePress={handleProfilePress}
+        showCredits={true}
+        credits={userData.credits}
+      />
+      
+      <View style={styles.content}>
+        <Text style={styles.title}>Generate Your Lead</Text>
+        <Text style={styles.subtitle}>
+          Spin the slot machine to discover your next potential client
+        </Text>
 
-          {error && (
-            <View style={styles.errorContainer}>
-              <ErrorMessage message={error} onDismiss={() => setError(null)} />
-            </View>
-          )}
-
-          {renderCreditWarning()}
-
-          <View style={styles.slotContainer}>
-            <SlotMachine
-              isSpinning={isSpinning}
-              onResult={handleLeadResult}
-              onGeneratePress={handleGeneratePress}
-              disabled={credits <= 0}
-              duration={3500} 
-            />
+        {error && (
+          <View style={styles.errorContainer}>
+            <ErrorMessage message={error} onDismiss={resetError} />
           </View>
+        )}
 
-          {!isSpinning && credits > 0 && (
-            <View style={styles.infoContainer}>
-              <Text style={styles.infoText}>
-                Each spin costs 1 credit and generates a qualified lead based on recent life events
-              </Text>
-            </View>
-          )}
+        <View style={styles.slotContainer}>
+          <SlotMachine
+            buttonState={buttonState}
+            onGeneratePress={handleGeneratePress}
+            onViewDetailsPress={handleViewDetailsPress}
+            onLeadGenerated={handleLeadGenerated}
+          />
         </View>
-      </Animated.View>
-    </ResponsiveLayout>
+
+        {renderCreditWarning()}
+
+        <View style={styles.infoContainer}>
+          <Text style={styles.infoText}>
+            Each spin costs 1 credit. Generate high-quality leads based on life events.
+          </Text>
+        </View>
+      </View>
+
+      <LoadingOverlay visible={isLoading} />
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: COLORS.background,
   },
   content: {
     flex: 1,
@@ -166,8 +162,8 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.md,
   },
   title: {
-    ...TYPOGRAPHY.h1,
-    color: COLORS.primary,
+    ...TYPOGRAPHY.h2,
+    color: COLORS.textPrimary,
     textAlign: 'center',
     marginBottom: SPACING.xs,
   },
@@ -180,8 +176,7 @@ const styles = StyleSheet.create({
   slotContainer: {
     flex: 1,
     justifyContent: 'center',
-    minHeight: 400, 
-    paddingVertical: SPACING.lg,
+    minHeight: 300,
   },
   errorContainer: {
     marginBottom: SPACING.md,
@@ -192,7 +187,7 @@ const styles = StyleSheet.create({
     padding: SPACING.md,
     borderLeftWidth: 4,
     borderLeftColor: COLORS.warning,
-    marginBottom: SPACING.md,
+    marginTop: SPACING.md,
   },
   criticalWarningContainer: {
     backgroundColor: COLORS.errorLight,

@@ -1,16 +1,34 @@
-import React, { createContext, useState, ReactNode } from 'react';
-import { User, AuthState } from '../types';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-interface AuthContextType extends AuthState {
-  login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
-  register: (email: string, password: string, name: string) => Promise<void>;
-  updateUser: (updates: Partial<User>) => void;
-  currentUser: User | null;
-  userData: any;
+export interface User {
+  id: string;
+  username: string;
+  email?: string;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export interface AuthState {
+  isAuthenticated: boolean;
+  user: User | null;
+  token?: string;
+}
+
+interface AuthContextType {
+  authState: AuthState;
+  isAuthenticated: boolean;
+  currentUser: string | null;
+  login: (username: string) => void;
+  logout: () => void;
+}
+
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const useAuth = (): AuthContextType => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within AuthProvider');
+  }
+  return context;
+};
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -18,87 +36,35 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [authState, setAuthState] = useState<AuthState>({
-    user: null,
     isAuthenticated: false,
-    isLoading: false,
+    user: null,
   });
 
-  const login = async (email: string, password: string): Promise<void> => {
-    setAuthState(prev => ({ ...prev, isLoading: true }));
+  const login = (username: string): void => {
+    const user: User = {
+      id: Math.random().toString(36).substr(2, 9),
+      username,
+    };
     
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const user: User = {
-        id: '1',
-        email,
-        name: 'John Doe',
-        credits: 25,
-        plan: 'Professional',
-        zipCode: '90210',
-      };
-
-      setAuthState({
-        user,
-        isAuthenticated: true,
-        isLoading: false,
-      });
-    } catch (error) {
-      setAuthState(prev => ({ ...prev, isLoading: false }));
-      throw error;
-    }
-  };
-
-  const register = async (email: string, password: string, name: string): Promise<void> => {
-    setAuthState(prev => ({ ...prev, isLoading: true }));
-    
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const user: User = {
-        id: '1',
-        email,
-        name,
-        credits: 10,
-        plan: 'Basic',
-        zipCode: '',
-      };
-
-      setAuthState({
-        user,
-        isAuthenticated: true,
-        isLoading: false,
-      });
-    } catch (error) {
-      setAuthState(prev => ({ ...prev, isLoading: false }));
-      throw error;
-    }
+    setAuthState({
+      isAuthenticated: true,
+      user,
+    });
   };
 
   const logout = (): void => {
     setAuthState({
-      user: null,
       isAuthenticated: false,
-      isLoading: false,
+      user: null,
     });
   };
 
-  const updateUser = (updates: Partial<User>): void => {
-    setAuthState(prev => ({
-      ...prev,
-      user: prev.user ? { ...prev.user, ...updates } : null,
-    }));
-  };
-
   const value: AuthContextType = {
-    ...authState,
+    authState,
+    isAuthenticated: authState.isAuthenticated,
+    currentUser: authState.user?.username || null,
     login,
     logout,
-    register,
-    updateUser,
-    currentUser: authState.user,
-    userData: authState.user,
   };
 
   return (
@@ -107,13 +73,3 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     </AuthContext.Provider>
   );
 };
-
-export const useAuth = () => {
-  const context = React.useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
-
-export { AuthContext };

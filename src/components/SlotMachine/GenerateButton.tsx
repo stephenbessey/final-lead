@@ -1,40 +1,86 @@
 import React from 'react';
 import { Text, StyleSheet, Pressable, Animated } from 'react-native';
-import { EnhancedGenerateButtonProps } from '../../types/slotMachine';
-import { getButtonText } from '../../utils/slotMachineHelpers';
+import { ButtonState } from '../../hooks/useButtonState';
 import { COLORS, TYPOGRAPHY, SPACING, SHADOWS } from '../../constants/theme';
 import { SLOT_MACHINE_CONFIG } from '../../constants/slotMachine';
 
-export const GenerateButton: React.FC<EnhancedGenerateButtonProps> = ({ 
-  disabled, 
-  isSpinning, 
-  onPress,
+interface GenerateButtonProps {
+  buttonState: ButtonState;
+  onGeneratePress: () => void;
+  onViewDetailsPress: () => void;
+  pulseValue: Animated.Value;
+}
+
+const getButtonText = (state: ButtonState): string => {
+  switch (state) {
+    case ButtonState.GENERATE:
+      return 'Generate Lead';
+    case ButtonState.GENERATING:
+      return 'Generating...';
+    case ButtonState.VIEW_DETAILS:
+      return 'View Lead Details';
+    case ButtonState.NO_CREDITS:
+      return 'No Credits';
+    default:
+      return 'Generate Lead';
+  }
+};
+
+const getButtonStyle = (state: ButtonState) => {
+  const baseStyle = [styles.button];
+  
+  switch (state) {
+    case ButtonState.NO_CREDITS:
+      return [...baseStyle, styles.buttonDisabled];
+    case ButtonState.GENERATING:
+      return [...baseStyle, styles.buttonSpinning];
+    case ButtonState.VIEW_DETAILS:
+      return [...baseStyle, styles.buttonViewDetails];
+    default:
+      return baseStyle;
+  }
+};
+
+const getTextStyle = (state: ButtonState) => {
+  const baseStyle = [styles.buttonText];
+  
+  if (state === ButtonState.NO_CREDITS) {
+    return [...baseStyle, styles.buttonTextDisabled];
+  }
+  
+  return baseStyle;
+};
+
+export const GenerateButton: React.FC<GenerateButtonProps> = ({
+  buttonState,
+  onGeneratePress,
+  onViewDetailsPress,
   pulseValue,
 }) => {
-  const getButtonStyle = () => [
-    styles.button,
-    disabled && styles.buttonDisabled,
-    isSpinning && styles.buttonSpinning,
-  ];
+  const isDisabled = buttonState === ButtonState.NO_CREDITS || buttonState === ButtonState.GENERATING;
+  const isViewDetails = buttonState === ButtonState.VIEW_DETAILS;
+  
+  const handlePress = (): void => {
+    if (isViewDetails) {
+      onViewDetailsPress();
+    } else {
+      onGeneratePress();
+    }
+  };
 
   return (
     <Animated.View style={[
       styles.buttonContainer,
-      {
-        transform: [{ scale: pulseValue }]
-      }
+      { transform: [{ scale: pulseValue }] }
     ]}>
       <Pressable
-        style={getButtonStyle()}
-        onPress={onPress}
-        disabled={disabled || isSpinning}
+        style={getButtonStyle(buttonState)}
+        onPress={handlePress}
+        disabled={isDisabled}
         android_ripple={{ color: COLORS.primaryDark }}
       >
-        <Text style={[
-          styles.buttonText,
-          disabled && styles.buttonTextDisabled,
-        ]}>
-          {getButtonText(disabled, isSpinning)}
+        <Text style={getTextStyle(buttonState)}>
+          {getButtonText(buttonState)}
         </Text>
       </Pressable>
     </Animated.View>
@@ -58,6 +104,9 @@ const styles = StyleSheet.create({
   },
   buttonSpinning: {
     backgroundColor: COLORS.primaryDark,
+  },
+  buttonViewDetails: {
+    backgroundColor: COLORS.success,
   },
   buttonText: {
     ...TYPOGRAPHY.button,

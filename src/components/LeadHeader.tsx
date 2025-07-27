@@ -1,67 +1,89 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { formatCurrency } from '../leads/leadFormatters';
-import { COLORS, TYPOGRAPHY, SPACING } from '../constants/theme';
+import { Lead } from '../types';
+import { COLORS, TYPOGRAPHY, SPACING, SHADOWS } from '../constants/theme';
 
 interface LeadHeaderProps {
-  lead: {
-    name: string;
-    lifeEvent: string;
-    propertyValue: number;
-  };
-  showPropertyValue?: boolean;
+  lead: Lead;
+  lifeEvent: string;
 }
-
-const formatLifeEvent = (lifeEvent: string): string => {
-  const eventMap: Record<string, string> = {
-    'baby': 'New Baby',
-    'death': 'Death in Family',
-    'married': 'Recently Married',
-    'house-sold': 'House Sold',
-    'divorced': 'Recently Divorced',
-  };
-  
-  return eventMap[lifeEvent] || lifeEvent;
-};
 
 export const LeadHeader: React.FC<LeadHeaderProps> = ({
   lead,
-  showPropertyValue = true,
+  lifeEvent,
 }) => {
   return (
     <View style={styles.container}>
-      <Text style={styles.name}>{lead.name}</Text>
-      <Text style={styles.lifeEvent}>{formatLifeEvent(lead.lifeEvent)}</Text>
-      {showPropertyValue && (
-        <Text style={styles.propertyValue}>
-          {formatCurrency(lead.propertyValue)}
-        </Text>
-      )}
+      <View style={styles.header}>
+        <Text style={styles.name}>{lead.name}</Text>
+        <Text style={styles.propertyValue}>{lead.propertyValue}</Text>
+      </View>
+      
+      <View style={styles.details}>
+        <View style={styles.detailItem}>
+          <Text style={styles.detailLabel}>Life Event:</Text>
+          <Text style={styles.detailValue}>{lifeEvent}</Text>
+        </View>
+        
+        <View style={styles.detailItem}>
+          <Text style={styles.detailLabel}>Client Type:</Text>
+          <Text style={styles.detailValue}>
+            {lead.clientType === 'buyer' ? 'Buyer' : 'Seller'}
+          </Text>
+        </View>
+        
+        <View style={styles.detailItem}>
+          <Text style={styles.detailLabel}>Price Range:</Text>
+          <Text style={styles.detailValue}>
+            {lead.priceRange === '$' ? 'Budget' : 
+             lead.priceRange === '$$' ? 'Mid-Range' : 'Premium'}
+          </Text>
+        </View>
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    alignItems: 'center',
-    paddingVertical: SPACING.lg,
-    backgroundColor: COLORS.surface,
+    backgroundColor: COLORS.white,
     borderRadius: 12,
+    padding: SPACING.lg,
+    marginBottom: SPACING.lg,
+    ...SHADOWS.medium,
+  },
+  header: {
+    alignItems: 'center',
     marginBottom: SPACING.md,
+    paddingBottom: SPACING.md,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
   },
   name: {
-    ...TYPOGRAPHY.headline,
+    ...TYPOGRAPHY.h2,
     color: COLORS.textPrimary,
     marginBottom: SPACING.xs,
   },
-  lifeEvent: {
-    ...TYPOGRAPHY.subtitle,
-    color: COLORS.primary,
-    marginBottom: SPACING.sm,
-  },
   propertyValue: {
-    ...TYPOGRAPHY.h2,
+    ...TYPOGRAPHY.h3,
     color: COLORS.success,
-    fontWeight: 'bold',
+    fontWeight: '700',
+  },
+  details: {
+    gap: SPACING.sm,
+  },
+  detailItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  detailLabel: {
+    ...TYPOGRAPHY.body,
+    color: COLORS.textSecondary,
+  },
+  detailValue: {
+    ...TYPOGRAPHY.body,
+    color: COLORS.textPrimary,
+    fontWeight: '600',
   },
 });

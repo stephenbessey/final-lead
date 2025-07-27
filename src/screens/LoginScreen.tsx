@@ -1,203 +1,187 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, TextInput, Pressable, Alert } from 'react-native';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../../App';
-import { ResponsiveLayout } from '../components/ResponsiveLayout';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  TextInput, 
+  Pressable, 
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView
+} from 'react-native';
 import { useAuth } from '../context/AuthContext';
-import { useSmoothNavigation } from '../hooks/useSmoothNavigation';
+import { RootStackScreenProps } from '../types/navigation';
 import { COLORS, TYPOGRAPHY, SPACING, SHADOWS } from '../constants/theme';
 
-type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
-
-interface Props {
-  navigation: LoginScreenNavigationProp;
-}
+type Props = RootStackScreenProps<'Login'>;
 
 const LoginScreen: React.FC<Props> = ({ navigation }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  
-  const { login, register } = useAuth();
-  const { navigateImmediately } = useSmoothNavigation(navigation);
+  const { login } = useAuth();
 
-  const handleLogin = useCallback(async () => {
-    if (!email.trim() || !password.trim()) {
-      Alert.alert('Error', 'Please enter both email and password');
+  const isValidUsername = useCallback((name: string): boolean => {
+    return name.trim().length >= 3;
+  }, []);
+
+  const handleLogin = useCallback(async (): Promise<void> => {
+    if (!isValidUsername(username)) {
+      Alert.alert('Invalid Username', 'Username must be at least 3 characters long.');
       return;
     }
 
-    setIsLoading(true);
     try {
-      await login(email, password);
-      navigateImmediately('GenerateLead');
+      setIsLoading(true);
+      
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      login(username.trim());
+      navigation.navigate('Registration');
     } catch (error) {
-      Alert.alert('Error', 'Login failed. Please try again.');
+      Alert.alert('Login Failed', 'Please try again.');
     } finally {
       setIsLoading(false);
     }
-  }, [email, password, login, navigateImmediately]);
+  }, [username, login, navigation, isValidUsername]);
 
-  const handleRegister = useCallback(async () => {
-    if (!email.trim() || !password.trim()) {
-      Alert.alert('Error', 'Please enter both email and password');
-      return;
-    }
+  const handleUsernameChange = useCallback((text: string): void => {
+    setUsername(text);
+  }, []);
 
-    setIsLoading(true);
-    try {
-      // Fixed: Added name parameter as required by register function
-      await register(email, password, 'New User');
-      navigateImmediately('Registration');
-    } catch (error) {
-      Alert.alert('Error', 'Registration failed. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [email, password, register, navigateImmediately]);
+  const isButtonDisabled = !isValidUsername(username) || isLoading;
 
   return (
-    <ResponsiveLayout scrollable={false} edges={['top', 'left', 'right', 'bottom']}>
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Lead Generator</Text>
-          <Text style={styles.subtitle}>
-            Find your next real estate clients based on life events
-          </Text>
-        </View>
-
-        <View style={styles.form}>
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Email</Text>
-            <TextInput
-              style={styles.input}
-              value={email}
-              onChangeText={setEmail}
-              placeholder="Enter your email"
-              placeholderTextColor={COLORS.textHint}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoComplete="email"
-              textContentType="emailAddress"
-            />
+    <KeyboardAvoidingView 
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.content}>
+          <View style={styles.header}>
+            <Text style={styles.title}>Lead Generator</Text>
+            <Text style={styles.subtitle}>Welcome Back</Text>
           </View>
 
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Password</Text>
-            <TextInput
-              style={styles.input}
-              value={password}
-              onChangeText={setPassword}
-              placeholder="Enter your password"
-              placeholderTextColor={COLORS.textHint}
-              secureTextEntry
-              autoComplete="password"
-              textContentType="password"
-            />
-          </View>
+          <View style={styles.form}>
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Username</Text>
+              <TextInput
+                style={styles.input}
+                value={username}
+                onChangeText={handleUsernameChange}
+                placeholder="Enter your username"
+                placeholderTextColor={COLORS.textHint}
+                autoCapitalize="none"
+                autoCorrect={false}
+                returnKeyType="done"
+                onSubmitEditing={handleLogin}
+                editable={!isLoading}
+              />
+            </View>
 
-          <View style={styles.buttonContainer}>
             <Pressable
-              style={[styles.button, styles.primaryButton]}
+              style={[
+                styles.button,
+                isButtonDisabled && styles.buttonDisabled,
+              ]}
               onPress={handleLogin}
-              disabled={isLoading}
+              disabled={isButtonDisabled}
               android_ripple={{ color: COLORS.primaryDark }}
             >
-              <Text style={[styles.buttonText, styles.primaryButtonText]}>
-                {isLoading ? 'Logging in...' : 'Login'}
-              </Text>
-            </Pressable>
-
-            <Pressable
-              style={[styles.button, styles.secondaryButton]}
-              onPress={handleRegister}
-              disabled={isLoading}
-              android_ripple={{ color: COLORS.primaryLight }}
-            >
-              <Text style={[styles.buttonText, styles.secondaryButtonText]}>
-                {isLoading ? 'Registering...' : 'Register'}
+              <Text style={styles.buttonText}>
+                {isLoading ? 'Logging in...' : 'Continue'}
               </Text>
             </Pressable>
           </View>
+
+          <View style={styles.footer}>
+            <Text style={styles.description}>
+              Generate high-quality leads based on life events and property data.
+              Start your real estate prospecting journey today.
+            </Text>
+          </View>
         </View>
-      </View>
-    </ResponsiveLayout>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: COLORS.background,
+  },
+  scrollContent: {
+    flexGrow: 1,
     justifyContent: 'center',
     paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.xl,
+  },
+  content: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    padding: SPACING.xl,
+    ...SHADOWS.medium,
   },
   header: {
     alignItems: 'center',
-    marginBottom: SPACING.xxl,
+    marginBottom: SPACING.xl,
   },
   title: {
-    ...TYPOGRAPHY.h1,
+    ...TYPOGRAPHY.headline,
     color: COLORS.primary,
-    marginBottom: SPACING.sm,
-    textAlign: 'center',
+    marginBottom: SPACING.xs,
   },
   subtitle: {
-    ...TYPOGRAPHY.body,
+    ...TYPOGRAPHY.title,
     color: COLORS.textSecondary,
-    textAlign: 'center',
   },
   form: {
-    width: '100%',
+    marginBottom: SPACING.xl,
   },
   inputContainer: {
     marginBottom: SPACING.lg,
   },
   label: {
-    ...TYPOGRAPHY.bodyMedium,
+    ...TYPOGRAPHY.subtitle,
     color: COLORS.textPrimary,
-    marginBottom: SPACING.xs,
-    fontWeight: '500',
+    marginBottom: SPACING.sm,
   },
   input: {
-    ...TYPOGRAPHY.body,
-    backgroundColor: COLORS.white,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: COLORS.divider,
     borderRadius: 8,
     paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
-    minHeight: 48,
-    color: COLORS.textPrimary,
-  },
-  buttonContainer: {
-    marginTop: SPACING.lg,
-    gap: SPACING.md,
+    paddingVertical: SPACING.md,
+    ...TYPOGRAPHY.body,
+    backgroundColor: COLORS.background,
   },
   button: {
-    borderRadius: 25,
-    paddingVertical: SPACING.md,
-    paddingHorizontal: SPACING.xl,
-    alignItems: 'center',
-    minHeight: 48,
-    ...SHADOWS.medium,
-  },
-  primaryButton: {
     backgroundColor: COLORS.primary,
+    paddingVertical: SPACING.md,
+    borderRadius: 8,
+    alignItems: 'center',
+    ...SHADOWS.small,
   },
-  secondaryButton: {
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: COLORS.primary,
+  buttonDisabled: {
+    backgroundColor: COLORS.textHint,
   },
   buttonText: {
     ...TYPOGRAPHY.button,
-    fontSize: 16,
-  },
-  primaryButtonText: {
     color: COLORS.white,
   },
-  secondaryButtonText: {
-    color: COLORS.primary,
+  footer: {
+    alignItems: 'center',
+  },
+  description: {
+    ...TYPOGRAPHY.bodySmall,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    lineHeight: 20,
   },
 });
 

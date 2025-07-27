@@ -1,88 +1,49 @@
-import React, { useCallback, useRef, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Animated, Pressable } from 'react-native';
-import { SlotMachineProps } from '../types/slotMachine';
+import React, { useCallback, useRef, useEffect } from 'react';
+import { View, Text, StyleSheet, Animated } from 'react-native';
+import { ButtonState } from '../hooks/useButtonState';
 import { useMachineEffects } from '../hooks/useMachineEffects';
 import { useLead } from '../hooks/useLead';
-import { generateRandomFinalIndices } from '../utils/slotMachineHelpers';
 import { Reel } from './SlotMachine/Reel';
 import { SlotMachineFrame } from './SlotMachine/SlotMachineFrame';
 import { GenerateButton } from './SlotMachine/GenerateButton';
+import { Lead } from '../types';
 import { COLORS, TYPOGRAPHY, SPACING } from '../constants/theme';
-import { 
-  SLOT_MACHINE_CONFIG, 
-  SLOT_MACHINE_TEXTS, 
-  SLOT_MACHINE_EMOJIS 
-} from '../constants/slotMachine';
+import { SLOT_MACHINE_CONFIG, SLOT_MACHINE_TEXTS, SLOT_MACHINE_EMOJIS } from '../constants/slotMachine';
+
+interface SlotMachineProps {
+  buttonState: ButtonState;
+  onGeneratePress: () => void;
+  onViewDetailsPress: () => void;
+  onLeadGenerated: (lead: Lead) => void;
+  duration?: number;
+}
 
 export const SlotMachine: React.FC<SlotMachineProps> = ({ 
-  isSpinning, 
-  onResult,
+  buttonState,
   onGeneratePress,
-  disabled = false,
+  onViewDetailsPress,
+  onLeadGenerated,
   duration = SLOT_MACHINE_CONFIG.animation.duration,
 }) => {
+  const isSpinning = buttonState === ButtonState.GENERATING;
   const { scaleValue, pulseValue } = useMachineEffects(isSpinning, duration);
   const finalIndices = useRef<number[]>([0, 0, 0]);
-  const [currentStatus, setCurrentStatus] = useState<string>('');
-  const [showSkipOption, setShowSkipOption] = useState(false);
-  const [canSkip, setCanSkip] = useState(false);
 
   const handleIndicesGenerated = useCallback((indices: number[]) => {
     finalIndices.current = indices;
   }, []);
 
-  const { generateLeadWithDelay, triggerEarlyResult } = useLead(onResult, handleIndicesGenerated);
+  const handleLeadResult = useCallback((lead: Lead): void => {
+    onLeadGenerated(lead);
+  }, [onLeadGenerated]);
 
-  useEffect(() => {
-    if (!isSpinning) {
-      setCurrentStatus('');
-      setShowSkipOption(false);
-      setCanSkip(false);
-      return;
-    }
-
-    const messages = Object.values(SLOT_MACHINE_TEXTS.statusMessages);
-    let messageIndex = 0;
-    
-    const rotateMessages = () => {
-      setCurrentStatus(messages[messageIndex]);
-      messageIndex = (messageIndex + 1) % messages.length;
-    };
-
-    rotateMessages();
-    
-    const messageInterval = setInterval(rotateMessages, 1200);
-
-    const skipTimer = setTimeout(() => {
-      if (SLOT_MACHINE_CONFIG.userControl.showSkipOption) {
-        setShowSkipOption(true);
-        setCanSkip(true);
-      }
-    }, SLOT_MACHINE_CONFIG.userControl.skipAvailableAfter);
-
-    return () => {
-      clearInterval(messageInterval);
-      clearTimeout(skipTimer);
-    };
-  }, [isSpinning]);
+  const { generateLeadWithDelay } = useLead(handleLeadResult, handleIndicesGenerated);
 
   useEffect(() => {
     if (isSpinning) {
       generateLeadWithDelay();
     }
   }, [isSpinning, generateLeadWithDelay]);
-
-  const handleGeneratePress = useCallback(() => {
-    onGeneratePress();
-  }, [onGeneratePress]);
-
-  const handleSkipAnimation = useCallback(() => {
-    if (canSkip && triggerEarlyResult) {
-      triggerEarlyResult();
-      setShowSkipOption(false);
-      setCanSkip(false);
-    }
-  }, [canSkip, triggerEarlyResult]);
 
   const reelEmojis = [
     SLOT_MACHINE_EMOJIS.lifeEvents,
@@ -113,30 +74,22 @@ export const SlotMachine: React.FC<SlotMachineProps> = ({
       </Animated.View>
 
       <GenerateButton
-        disabled={disabled}
-        isSpinning={isSpinning}
-        onPress={handleGeneratePress}
+        buttonState={buttonState}
+        onGeneratePress={onGeneratePress}
+        onViewDetailsPress={onViewDetailsPress}
         pulseValue={pulseValue}
       />
 
       {isSpinning && (
-        <View style={styles.statusContainer}>
-          <Text style={styles.statusText}>
-            {currentStatus}
-          </Text>
-          
-          {showSkipOption && canSkip && (
-            <Pressable 
-              style={styles.skipButton}
-              onPress={handleSkipAnimation}
-              android_ripple={{ color: COLORS.primaryLight }}
-            >
-              <Text style={styles.skipButtonText}>
-                {SLOT_MACHINE_TEXTS.buttons.viewResults}
-              </Text>
-            </Pressable>
-          )}
-        </View>
+        <Text style={styles.statusText}>
+          {SLOT_MACHINE_TEXTS.statusMessage}
+        </Text>
+      )}
+
+      {buttonState === ButtonState.VIEW_DETAILS && (
+        <Text style={styles.readyText}>
+          🎉 Lead Generated! Tap to view details.
+        </Text>
       )}
     </View>
   );
@@ -152,29 +105,17 @@ const styles = StyleSheet.create({
   machineContainer: {
     marginBottom: SPACING.xl,
   },
-  statusContainer: {
-    alignItems: 'center',
-    marginTop: SPACING.lg,
-    minHeight: 80, 
-  },
   statusText: {
     ...TYPOGRAPHY.bodySmall,
     color: COLORS.textSecondary,
+    marginTop: SPACING.lg,
     textAlign: 'center',
-    marginBottom: SPACING.md,
   },
-  skipButton: {
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: COLORS.primary,
-    borderRadius: 20,
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.sm,
-    marginTop: SPACING.sm,
-  },
-  skipButtonText: {
+  readyText: {
     ...TYPOGRAPHY.bodySmall,
-    color: COLORS.primary,
-    fontWeight: '500',
+    color: COLORS.success,
+    marginTop: SPACING.lg,
+    textAlign: 'center',
+    fontWeight: '600',
   },
 });

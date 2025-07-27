@@ -1,93 +1,59 @@
 import React from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { View, StyleSheet, Pressable, Text } from 'react-native';
 import { COLORS, TYPOGRAPHY, SPACING, SHADOWS } from '../constants/theme';
 
-interface ActionButton {
-  id: string;
-  title: string;
-  icon: keyof typeof Ionicons.glyphMap;
-  onPress: () => void | Promise<void>; 
-  color?: string;
-  disabled?: boolean;
-}
-
 interface ActionButtonsProps {
-  buttons: ActionButton[];
-  layout?: 'horizontal' | 'vertical';
-  onExport?: () => Promise<void>;
-  onBack?: () => void;
+  onExport: () => Promise<void>;
+  onBack: () => void;
 }
 
 export const ActionButtons: React.FC<ActionButtonsProps> = ({
-  buttons,
-  layout = 'horizontal',
   onExport,
   onBack,
 }) => {
-  const containerStyle = [
-    styles.container,
-    layout === 'vertical' ? styles.verticalLayout : styles.horizontalLayout,
-  ];
-
   return (
-    <View style={containerStyle}>
-      {buttons.map((button) => (
-        <Pressable
-          key={button.id}
-          style={[
-            styles.button,
-            button.disabled && styles.buttonDisabled,
-            { backgroundColor: button.color || COLORS.primary },
-          ]}
-          onPress={button.onPress}
-          disabled={button.disabled}
-          android_ripple={{ color: COLORS.white }}
-        >
-          <Ionicons
-            name={button.icon}
-            size={20}
-            color={COLORS.white}
-            style={styles.icon}
-          />
-          <Text style={styles.buttonText}>{button.title}</Text>
-        </Pressable>
-      ))}
+    <View style={styles.container}>
+      <Pressable style={styles.exportButton} onPress={onExport}>
+        <Text style={styles.exportButtonText}>Export Lead</Text>
+      </Pressable>
+      
+      <Pressable style={styles.backButton} onPress={onBack}>
+        <Text style={styles.backButtonText}>Back</Text>
+      </Pressable>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    gap: SPACING.sm,
-  },
-  horizontalLayout: {
     flexDirection: 'row',
+    gap: SPACING.md,
+    marginTop: SPACING.xl,
   },
-  verticalLayout: {
-    flexDirection: 'column',
-  },
-  button: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
-    borderRadius: 8,
+  exportButton: {
     flex: 1,
-    minHeight: 44,
+    backgroundColor: COLORS.primary,
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+    borderRadius: 8,
+    alignItems: 'center',
     ...SHADOWS.small,
   },
-  buttonDisabled: {
-    backgroundColor: COLORS.textHint,
-    opacity: 0.6,
-  },
-  icon: {
-    marginRight: SPACING.xs,
-  },
-  buttonText: {
+  exportButtonText: {
     ...TYPOGRAPHY.button,
     color: COLORS.white,
-    fontSize: 14,
+  },
+  backButton: {
+    flex: 1,
+    backgroundColor: COLORS.textHint,
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+    borderRadius: 8,
+    alignItems: 'center',
+    ...SHADOWS.small,
+  },
+  backButtonText: {
+    ...TYPOGRAPHY.button,
+    color: COLORS.white,
   },
 });

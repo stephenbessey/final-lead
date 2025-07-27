@@ -1,52 +1,60 @@
 import { Lead, ValidationResult } from '../types';
 
-const safeTrim = (value: any): string => {
-  if (typeof value === 'string') {
-    return value.trim();
-  }
-  if (typeof value === 'number') {
-    return value.toString();
-  }
-  return String(value || '').trim();
-};
-
 export const validateLead = (lead: Partial<Lead>): ValidationResult => {
   const errors: string[] = [];
 
-  if (!safeTrim(lead.name)) {
+  if (!lead.name || lead.name.trim().length === 0) {
     errors.push('Name is required');
   }
 
-  if (!safeTrim(lead.email)) {
-    errors.push('Email is required');
-  } else if (!isValidEmail(safeTrim(lead.email))) {
-    errors.push('Please enter a valid email address');
-  }
-
-  if (!safeTrim(lead.phone)) {
+  if (!lead.phone || lead.phone.trim().length === 0) {
     errors.push('Phone number is required');
-  } else if (!isValidPhoneNumber(safeTrim(lead.phone))) {
-    errors.push('Please enter a valid phone number');
+  } else {
+    const phoneDigits = lead.phone.replace(/\D/g, '');
+    if (phoneDigits.length < 10) {
+      errors.push('Phone number must be at least 10 digits');
+    }
   }
 
-  if (!safeTrim(lead.address)) {
+  if (!lead.email || lead.email.trim().length === 0) {
+    errors.push('Email is required');
+  } else {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(lead.email)) {
+      errors.push('Email format is invalid');
+    }
+  }
+
+  if (!lead.address || lead.address.trim().length === 0) {
     errors.push('Address is required');
   }
 
-  if (!lead.propertyValue || lead.propertyValue <= 0) {
-    errors.push('Property value must be greater than 0');
+  if (!lead.propertyValue || lead.propertyValue.trim().length === 0) {
+    errors.push('Property value is required');
+  } else {
+    const propertyValueStr = lead.propertyValue.toString();
+    const currencyRegex = /^\$[\d,]+(\.\d{2})?$/;
+    if (!currencyRegex.test(propertyValueStr)) {
+      const numericValue = parseFloat(propertyValueStr.replace(/[$,]/g, ''));
+      if (isNaN(numericValue) || numericValue <= 0) {
+        errors.push('Property value must be a valid positive amount');
+      }
+    }
   }
 
-  if (!lead.lifeEvent) {
-    errors.push('Life event is required');
+  const validLifeEvents = ['baby', 'death', 'married', 'house-sold', 'divorced'];
+  if (!lead.lifeEvent || !validLifeEvents.includes(lead.lifeEvent)) {
+    errors.push('Valid life event is required');
   }
 
-  if (!lead.priceRange) {
-    errors.push('Price range is required');
+  const validClientTypes = ['buyer', 'seller'];
+  if (!lead.clientType || !validClientTypes.includes(lead.clientType)) {
+    errors.push('Valid client type is required');
   }
-
-  if (!lead.clientType) {
-    errors.push('Client type is required');
+  
+  const validPriceRanges = ['$', '$$', '$$$'];
+  if (!lead.priceRange || !validPriceRanges.includes(lead.priceRange)) {
+    errors.push('Valid price range is required');
   }
 
   return {
@@ -55,40 +63,27 @@ export const validateLead = (lead: Partial<Lead>): ValidationResult => {
   };
 };
 
-const isValidEmail = (email: string): boolean => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
-};
-
-const isValidPhoneNumber = (phone: string): boolean => {
-  const phoneRegex = /^[\+]?[1-9]?[\s\-\(\)]?[\d\s\-\(\)]{10,14}$/;
-  return phoneRegex.test(phone);
-};
-
-export const validatePropertyValue = (value: string | number): ValidationResult => {
+export const validateLeadForGeneration = (options: {
+  zipCode?: string;
+  maxResults?: number;
+}): ValidationResult => {
   const errors: string[] = [];
-  const numericValue = typeof value === 'string' ? parseFloat(value) : value;
 
-  if (isNaN(numericValue)) {
-    errors.push('Property value must be a valid number');
-  } else if (numericValue <= 0) {
-    errors.push('Property value must be greater than 0');
-  } else if (numericValue > 10000000) {
-    errors.push('Property value seems unreasonably high');
+  if (!options.zipCode || options.zipCode.trim().length === 0) {
+    errors.push('ZIP code is required for lead generation');
+  }
+
+  if (options.maxResults !== undefined) {
+    if (options.maxResults <= 0) {
+      errors.push('Max results must be greater than 0');
+    }
+    if (options.maxResults > 50) {
+      errors.push('Max results cannot exceed 50');
+    }
   }
 
   return {
     isValid: errors.length === 0,
     errors,
-  };
-};
-
-export const sanitizeLeadData = (lead: Partial<Lead>): Partial<Lead> => {
-  return {
-    ...lead,
-    name: safeTrim(lead.name),
-    email: safeTrim(lead.email),
-    phone: safeTrim(lead.phone),
-    address: safeTrim(lead.address),
   };
 };

@@ -1,40 +1,41 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { COLORS, TYPOGRAPHY, SPACING, SHADOWS } from '../constants/theme';
 
 interface AppHeaderProps {
   onMenuPress: () => void;
   onProfilePress: () => void;
-  showCredits: boolean;
+  showCredits?: boolean;
   credits?: number;
+  title?: string;
 }
 
 export const AppHeader: React.FC<AppHeaderProps> = ({
   onMenuPress,
   onProfilePress,
-  showCredits,
-  credits,
+  showCredits = false,
+  credits = 0,
+  title,
 }) => {
   return (
     <View style={styles.container}>
-      <Pressable style={styles.iconButton} onPress={onMenuPress}>
-        <Ionicons name="menu" size={24} color={COLORS.primary} />
+      <Pressable style={styles.menuButton} onPress={onMenuPress}>
+        <Text style={styles.menuIcon}>☰</Text>
       </Pressable>
-
-      <Text style={styles.title}>Lead Generator</Text>
-
-      <View style={styles.rightSection}>
-        {showCredits && (
-          <View style={styles.creditsContainer}>
-            <Text style={styles.creditsText}>{credits || 0} credits</Text>
-          </View>
-        )}
-        
-        <Pressable style={styles.iconButton} onPress={onProfilePress}>
-          <Ionicons name="person-circle" size={24} color={COLORS.primary} />
-        </Pressable>
-      </View>
+      
+      {title && (
+        <Text style={styles.title}>{title}</Text>
+      )}
+      
+      {showCredits && (
+        <View style={styles.creditsContainer}>
+          <Text style={styles.creditsText}>{credits} Credits</Text>
+        </View>
+      )}
+      
+      <Pressable style={styles.profileButton} onPress={onProfilePress}>
+        <Text style={styles.profileIcon}>👤</Text>
+      </Pressable>
     </View>
   );
 };
@@ -47,34 +48,36 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.md,
     backgroundColor: COLORS.white,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
     ...SHADOWS.small,
   },
-  iconButton: {
+  menuButton: {
     padding: SPACING.sm,
-    borderRadius: 20,
+  },
+  menuIcon: {
+    fontSize: 24,
+    color: COLORS.textPrimary,
   },
   title: {
-    ...TYPOGRAPHY.headline,
-    color: COLORS.primary,
+    ...TYPOGRAPHY.h3,
+    color: COLORS.textPrimary,
     flex: 1,
     textAlign: 'center',
   },
-  rightSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
   creditsContainer: {
     backgroundColor: COLORS.primaryLight,
-    paddingHorizontal: SPACING.sm,
+    paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.xs,
-    borderRadius: 12,
-    marginRight: SPACING.sm,
+    borderRadius: 16,
   },
   creditsText: {
-    ...TYPOGRAPHY.caption,
+    ...TYPOGRAPHY.bodySmall,
     color: COLORS.primary,
     fontWeight: '600',
+  },
+  profileButton: {
+    padding: SPACING.sm,
+  },
+  profileIcon: {
+    fontSize: 24,
   },
 });
