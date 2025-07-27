@@ -1,148 +1,74 @@
-import { Lead, LifeEvent, ClientType, PriceRange } from '../types';
-import { formatPhoneForDisplay } from '../contact/contactFormatters';
+import { Lead } from '../types';
 
-const FIRST_NAMES: string[] = [
-  'James', 'Mary', 'Robert', 'Patricia', 'John', 'Jennifer', 'Michael', 'Linda',
-  'David', 'Elizabeth', 'William', 'Barbara', 'Richard', 'Susan', 'Joseph', 'Jessica',
-  'Thomas', 'Sarah', 'Christopher', 'Karen', 'Charles', 'Nancy', 'Daniel', 'Lisa',
-  'Matthew', 'Betty', 'Anthony', 'Helen', 'Mark', 'Sandra', 'Donald', 'Donna',
+const SAMPLE_NAMES = [
+  'John Smith', 'Sarah Johnson', 'Michael Brown', 'Emily Davis',
+  'David Wilson', 'Jennifer Miller', 'Robert Taylor', 'Lisa Anderson',
+  'Christopher Lee', 'Amanda Garcia', 'Matthew Martinez', 'Jessica Rodriguez',
+  'Daniel Hernandez', 'Ashley Lopez', 'Anthony Gonzalez', 'Elizabeth Miller'
 ];
 
-const LAST_NAMES: string[] = [
-  'Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis',
-  'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson',
-  'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin', 'Lee', 'Perez', 'Thompson',
-  'White', 'Harris', 'Sanchez', 'Clark', 'Ramirez', 'Lewis', 'Robinson', 'Walker',
+const SAMPLE_ADDRESSES = [
+  '123 Main St', '456 Oak Ave', '789 Pine Rd', '321 Elm St',
+  '654 Maple Dr', '987 Cedar Ln', '147 Birch Way', '258 Willow Ct',
+  '369 Sunset Blvd', '741 Harbor View', '852 Mountain Dr', '963 Valley Rd'
 ];
 
-const STREET_NAMES: string[] = [
-  'Main St', 'Oak Ave', 'Maple Dr', 'Park Blvd', 'Cedar Ln', 'Elm St', 'Pine Ave',
-  'Washington St', 'Lincoln Ave', 'Jefferson Dr', 'Madison Blvd', 'Monroe St',
-  'Adams Ave', 'Jackson Dr', 'Harrison Blvd', 'Tyler St', 'Taylor Ave', 'Wilson Dr',
+const LIFE_EVENTS: readonly ('baby' | 'death' | 'married' | 'house-sold' | 'divorced')[] = [
+  'baby', 'death', 'married', 'house-sold', 'divorced'
 ];
 
-const EMAIL_DOMAINS: string[] = [
-  'gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'aol.com', 'icloud.com',
-];
+const PRICE_RANGES: readonly ('$' | '$$' | '$$$')[] = ['$', '$$', '$$$'];
+const CLIENT_TYPES: readonly ('buyer' | 'seller')[] = ['buyer', 'seller'];
 
-const LIFE_EVENTS: LifeEvent[] = ['baby', 'death', 'married', 'house-sold', 'divorced'];
-const CLIENT_TYPES: ClientType[] = ['buyer', 'seller'];
-const PRICE_RANGES: PriceRange[] = ['$', '$$', '$$$'];
+const generateEmail = (name: string): string => {
+  const cleanName = name.toLowerCase().replace(/\s+/g, '.');
+  const domains = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com'];
+  const domain = domains[Math.floor(Math.random() * domains.length)];
+  return `${cleanName}@${domain}`;
+};
 
-const getRandomArrayElement = (array: string[]): string => {
-  if (array.length === 0) {
-    throw new Error('Array cannot be empty');
+const generatePhone = (): string => {
+  const areaCode = Math.floor(Math.random() * 900) + 100;
+  const exchange = Math.floor(Math.random() * 900) + 100;
+  const number = Math.floor(Math.random() * 9000) + 1000;
+  return `(${areaCode}) ${exchange}-${number}`;
+};
+
+const generatePropertyValue = (priceRange: '$' | '$$' | '$$$'): number => {
+  switch (priceRange) {
+    case '$':
+      return Math.floor(Math.random() * 200000) + 100000; 
+    case '$$':
+      return Math.floor(Math.random() * 400000) + 300000; 
+    case '$$$':
+      return Math.floor(Math.random() * 800000) + 700000; 
+    default:
+      return Math.floor(Math.random() * 400000) + 200000;
   }
-  const index = Math.floor(Math.random() * array.length);
-  return array[index];
-};
-
-const getRandomLifeEvent = (): LifeEvent => {
-  if (LIFE_EVENTS.length === 0) {
-    return 'baby'; // fallback
-  }
-  const index = Math.floor(Math.random() * LIFE_EVENTS.length);
-  return LIFE_EVENTS[index];
-};
-
-const getRandomClientType = (): ClientType => {
-  if (CLIENT_TYPES.length === 0) {
-    return 'buyer'; // fallback
-  }
-  const index = Math.floor(Math.random() * CLIENT_TYPES.length);
-  return CLIENT_TYPES[index];
-};
-
-const getRandomPriceRange = (): PriceRange => {
-  if (PRICE_RANGES.length === 0) {
-    return '$'; // fallback
-  }
-  const index = Math.floor(Math.random() * PRICE_RANGES.length);
-  return PRICE_RANGES[index];
-};
-
-const generateRandomId = (): string => 
-  Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-
-const generateRandomPhone = (): string => {
-  const areaCode = Math.floor(Math.random() * 800) + 200;
-  const exchange = Math.floor(Math.random() * 800) + 200;
-  const number = Math.floor(Math.random() * 10000);
-  return formatPhoneForDisplay(`${areaCode}${exchange}${number.toString().padStart(4, '0')}`);
-};
-
-const generateRandomEmail = (firstName: string, lastName: string): string => {
-  const domain = getRandomArrayElement(EMAIL_DOMAINS);
-  const separator = Math.random() > 0.5 ? '.' : '';
-  const number = Math.random() > 0.7 ? Math.floor(Math.random() * 99) : '';
-  return `${firstName.toLowerCase()}${separator}${lastName.toLowerCase()}${number}@${domain}`;
-};
-
-const generateRandomAddress = (): string => {
-  const streetNumber = Math.floor(Math.random() * 9999) + 1;
-  const streetName = getRandomArrayElement(STREET_NAMES);
-  return `${streetNumber} ${streetName}`;
-};
-
-const generateRandomPropertyValue = (): string => {
-  const value = Math.floor(Math.random() * 900000) + 100000;
-  return `$${value.toLocaleString()}`;
 };
 
 export const generateRandomLead = (): Lead => {
-  const firstName = getRandomArrayElement(FIRST_NAMES);
-  const lastName = getRandomArrayElement(LAST_NAMES);
+  const randomName = SAMPLE_NAMES[Math.floor(Math.random() * SAMPLE_NAMES.length)];
+  const randomAddress = SAMPLE_ADDRESSES[Math.floor(Math.random() * SAMPLE_ADDRESSES.length)];
+  const lifeEvent = LIFE_EVENTS[Math.floor(Math.random() * LIFE_EVENTS.length)];
+  const priceRange = PRICE_RANGES[Math.floor(Math.random() * PRICE_RANGES.length)];
+  const clientType = CLIENT_TYPES[Math.floor(Math.random() * CLIENT_TYPES.length)];
   
   return {
-    id: generateRandomId(),
-    name: `${firstName} ${lastName}`,
-    phone: generateRandomPhone(),
-    email: generateRandomEmail(firstName, lastName),
-    address: generateRandomAddress(),
-    propertyValue: generateRandomPropertyValue(),
-    lifeEvent: getRandomLifeEvent(),
-    clientType: getRandomClientType(),
-    priceRange: getRandomPriceRange(),
+    id: `lead_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    name: randomName,
+    email: generateEmail(randomName),
+    phone: generatePhone(),
+    address: randomAddress,
+    propertyValue: generatePropertyValue(priceRange),
+    lifeEvent,
+    priceRange,
+    clientType,
     createdAt: new Date().toISOString(), 
   };
 };
 
-export const formatLeadForExport = (lead: Lead): string => {
-  const lifeEventLabels = {
-    baby: 'New Baby',
-    death: 'Death in Family',
-    married: 'Recently Married',
-    'house-sold': 'House Sold Nearby',
-    divorced: 'Recently Divorced',
-  };
 
-  const clientTypeLabels = {
-    buyer: 'Buyer',
-    seller: 'Seller',
-  };
-
-  const priceRangeLabels = {
-    '$': 'Budget',
-    '$$': 'Mid-Range',
-    '$$$': 'Premium',
-  };
-
-  const createdDate = lead.createdAt 
-    ? (typeof lead.createdAt === 'string' 
-        ? new Date(lead.createdAt).toLocaleDateString()
-        : lead.createdAt.toLocaleDateString())
-    : 'Unknown';
-
-  return `
-Lead Information:
-Name: ${lead.name}
-Phone: ${lead.phone}
-Email: ${lead.email}
-Address: ${lead.address}
-Property Value: ${lead.propertyValue}
-Life Event: ${lifeEventLabels[lead.lifeEvent]}
-Client Type: ${clientTypeLabels[lead.clientType]}
-Price Range: ${priceRangeLabels[lead.priceRange]}
-Generated: ${createdDate}
-`.trim();
+export const parseLeadDate = (lead: Lead): Date => {
+  return new Date(lead.createdAt);
 };

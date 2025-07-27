@@ -1,53 +1,89 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { SlotMachineFrameProps } from '../../types/slotMachine';
-import { MachineDecorations } from './MachineDecorations';
 import { COLORS, TYPOGRAPHY, SPACING, SHADOWS } from '../../constants/theme';
-import { SLOT_MACHINE_TEXTS, SLOT_MACHINE_CONFIG } from '../../constants/slotMachine';
+import { SLOT_MACHINE_CONFIG, SLOT_MACHINE_TEXTS } from '../../constants/slotMachine';
 
-export const SlotMachineFrame: React.FC<SlotMachineFrameProps> = ({ children }) => (
-  <View style={frameStyles.frame}>
-    <View style={frameStyles.header}>
-      <Text style={frameStyles.title}>{SLOT_MACHINE_TEXTS.machineTitle}</Text>
+export const SlotMachineFrame: React.FC<SlotMachineFrameProps> = ({ children }) => {
+  return (
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>{SLOT_MACHINE_TEXTS.machineTitle}</Text>
+        <View style={styles.lightsContainer}>
+          {SLOT_MACHINE_TEXTS.decorativeLights.map((light, index) => (
+            <Text key={index} style={styles.light}>{light}</Text>
+          ))}
+        </View>
+      </View>
+      
+      <View style={styles.frame}>
+        <View style={styles.reelsContainer}>
+          {children}
+        </View>
+        
+        <View style={styles.coinSlot}>
+          <Text style={styles.coinIcon}>{SLOT_MACHINE_TEXTS.coinSlot}</Text>
+        </View>
+      </View>
+      
+      <View style={styles.base} />
     </View>
-    
-    <View style={frameStyles.reelsContainer}>
-      {children}
-    </View>
-    
-    <MachineDecorations />
-  </View>
-);
+  );
+};
 
-const frameStyles = StyleSheet.create({
-  frame: {
-    backgroundColor: COLORS.surface,
-    borderRadius: SLOT_MACHINE_CONFIG.machine.borderRadius,
-    padding: SPACING.lg,
-    ...SHADOWS.large,
-    borderWidth: SLOT_MACHINE_CONFIG.machine.borderWidth,
-    borderColor: COLORS.primary,
-    minWidth: SLOT_MACHINE_CONFIG.machine.minWidth,
+const styles = StyleSheet.create({
+  container: {
+    alignItems: 'center',
   },
   header: {
-    backgroundColor: COLORS.primary,
-    borderRadius: 12,
-    padding: SPACING.sm,
-    marginBottom: SPACING.lg,
+    alignItems: 'center',
+    marginBottom: SPACING.md,
   },
   title: {
-    ...TYPOGRAPHY.caption,
-    color: COLORS.white,
-    textAlign: 'center',
+    ...TYPOGRAPHY.headline,
+    color: COLORS.primary,
     fontWeight: 'bold',
-    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: SPACING.xs,
+  },
+  lightsContainer: {
+    flexDirection: 'row',
+    gap: SPACING.sm,
+  },
+  light: {
+    fontSize: 16,
+  },
+  frame: {
+    backgroundColor: COLORS.primary,
+    borderRadius: SLOT_MACHINE_CONFIG.machine.borderRadius,
+    borderWidth: SLOT_MACHINE_CONFIG.machine.borderWidth,
+    borderColor: COLORS.primaryDark,
+    padding: SPACING.lg,
+    minWidth: SLOT_MACHINE_CONFIG.machine.minWidth,
+    ...SHADOWS.large,
   },
   reelsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    backgroundColor: COLORS.background,
-    borderRadius: 16,
-    padding: SPACING.md,
-    gap: SPACING.sm,
+    gap: SPACING.md,
+    marginBottom: SPACING.md,
+  },
+  coinSlot: {
+    alignSelf: 'center',
+    backgroundColor: COLORS.primaryDark,
+    borderRadius: 20,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.xs,
+  },
+  coinIcon: {
+    fontSize: 20,
+    textAlign: 'center',
+  },
+  base: {
+    width: SLOT_MACHINE_CONFIG.machine.minWidth + 40,
+    height: 20,
+    backgroundColor: COLORS.primaryDark,
+    borderRadius: 10,
+    marginTop: SPACING.sm,
   },
 });

@@ -3,63 +3,91 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, TYPOGRAPHY, SPACING, SHADOWS } from '../constants/theme';
 
-interface ActionButtonsProps {
-  onExport: () => void;
-  onBack: () => void;
+interface ActionButton {
+  id: string;
+  title: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  onPress: () => void | Promise<void>; 
+  color?: string;
+  disabled?: boolean;
 }
 
-export const ActionButtons: React.FC<ActionButtonsProps> = ({ onExport, onBack }) => (
-  <View style={styles.container}>
-    <Pressable
-      style={[styles.button, styles.exportButton]}
-      onPress={onExport}
-      android_ripple={{ color: COLORS.secondaryLight }}
-    >
-      <Ionicons name="download" size={20} color={COLORS.white} />
-      <Text style={styles.buttonText}>Export Lead</Text>
-    </Pressable>
-    
-    <Pressable
-      style={[styles.button, styles.backButton]}
-      onPress={onBack}
-      android_ripple={{ color: COLORS.divider }}
-    >
-      <Ionicons name="arrow-back" size={20} color={COLORS.textPrimary} />
-      <Text style={[styles.buttonText, styles.backButtonText]}>Back</Text>
-    </Pressable>
-  </View>
-);
+interface ActionButtonsProps {
+  buttons: ActionButton[];
+  layout?: 'horizontal' | 'vertical';
+  onExport?: () => Promise<void>;
+  onBack?: () => void;
+}
+
+export const ActionButtons: React.FC<ActionButtonsProps> = ({
+  buttons,
+  layout = 'horizontal',
+  onExport,
+  onBack,
+}) => {
+  const containerStyle = [
+    styles.container,
+    layout === 'vertical' ? styles.verticalLayout : styles.horizontalLayout,
+  ];
+
+  return (
+    <View style={containerStyle}>
+      {buttons.map((button) => (
+        <Pressable
+          key={button.id}
+          style={[
+            styles.button,
+            button.disabled && styles.buttonDisabled,
+            { backgroundColor: button.color || COLORS.primary },
+          ]}
+          onPress={button.onPress}
+          disabled={button.disabled}
+          android_ripple={{ color: COLORS.white }}
+        >
+          <Ionicons
+            name={button.icon}
+            size={20}
+            color={COLORS.white}
+            style={styles.icon}
+          />
+          <Text style={styles.buttonText}>{button.title}</Text>
+        </Pressable>
+      ))}
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
+    gap: SPACING.sm,
+  },
+  horizontalLayout: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: SPACING.lg,
-    gap: SPACING.md,
+  },
+  verticalLayout: {
+    flexDirection: 'column',
   },
   button: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
     borderRadius: 8,
+    flex: 1,
+    minHeight: 44,
     ...SHADOWS.small,
   },
-  exportButton: {
-    backgroundColor: COLORS.secondary,
+  buttonDisabled: {
+    backgroundColor: COLORS.textHint,
+    opacity: 0.6,
   },
-  backButton: {
-    backgroundColor: COLORS.surface,
-    borderWidth: 1,
-    borderColor: COLORS.divider,
+  icon: {
+    marginRight: SPACING.xs,
   },
   buttonText: {
     ...TYPOGRAPHY.button,
     color: COLORS.white,
-    marginLeft: SPACING.sm,
-  },
-  backButtonText: {
-    color: COLORS.textPrimary,
+    fontSize: 14,
   },
 });

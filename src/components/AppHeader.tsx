@@ -1,94 +1,80 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useUser } from '../context/UserContext';
-import { useAuth } from '../context/AuthContext';
+import { COLORS, TYPOGRAPHY, SPACING, SHADOWS } from '../constants/theme';
 
 interface AppHeaderProps {
   onMenuPress: () => void;
   onProfilePress: () => void;
-  showCredits?: boolean;
+  showCredits: boolean;
+  credits?: number;
 }
 
-export const AppHeader: React.FC<AppHeaderProps> = ({ 
-  onMenuPress, 
-  onProfilePress, 
-  showCredits = true 
+export const AppHeader: React.FC<AppHeaderProps> = ({
+  onMenuPress,
+  onProfilePress,
+  showCredits,
+  credits,
 }) => {
-  const { userData } = useUser();
-  const { currentUser } = useAuth();
-
   return (
-    <View style={styles.header}>
-      <Pressable 
-        style={styles.iconButton} 
-        onPress={onMenuPress}
-        android_ripple={{ color: '#E3F2FD' }}
-      >
-        <Ionicons name="menu" size={24} color="#2196F3" />
+    <View style={styles.container}>
+      <Pressable style={styles.iconButton} onPress={onMenuPress}>
+        <Ionicons name="menu" size={24} color={COLORS.primary} />
       </Pressable>
 
-      {showCredits && (
-        <View style={styles.creditsContainer}>
-          <Text style={styles.creditsText}>{userData.credits}</Text>
-        </View>
-      )}
+      <Text style={styles.title}>Lead Generator</Text>
 
-      <Pressable 
-        style={styles.profileButton} 
-        onPress={onProfilePress}
-        android_ripple={{ color: '#E3F2FD', borderless: true }}
-      >
-        <Text style={styles.profileInitial}>
-          {currentUser ? currentUser.charAt(0).toUpperCase() : 'U'}
-        </Text>
-      </Pressable>
+      <View style={styles.rightSection}>
+        {showCredits && (
+          <View style={styles.creditsContainer}>
+            <Text style={styles.creditsText}>{credits || 0} credits</Text>
+          </View>
+        )}
+        
+        <Pressable style={styles.iconButton} onPress={onProfilePress}>
+          <Ionicons name="person-circle" size={24} color={COLORS.primary} />
+        </Pressable>
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  header: {
+  container: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#fff',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    justifyContent: 'space-between',
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+    backgroundColor: COLORS.white,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+    ...SHADOWS.small,
   },
   iconButton: {
-    padding: 8,
+    padding: SPACING.sm,
     borderRadius: 20,
+  },
+  title: {
+    ...TYPOGRAPHY.headline,
+    color: COLORS.primary,
+    flex: 1,
+    textAlign: 'center',
+  },
+  rightSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   creditsContainer: {
-    backgroundColor: '#E3F2FD',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    minWidth: 60,
-    alignItems: 'center',
+    backgroundColor: COLORS.primaryLight,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: SPACING.xs,
+    borderRadius: 12,
+    marginRight: SPACING.sm,
   },
   creditsText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#2196F3',
-  },
-  profileButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#2196F3',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  profileInitial: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
+    ...TYPOGRAPHY.caption,
+    color: COLORS.primary,
+    fontWeight: '600',
   },
 });

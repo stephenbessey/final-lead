@@ -1,18 +1,34 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, Alert } from 'react-native';
+import React, { useCallback } from 'react';
+import { View, Text, StyleSheet, Pressable, ScrollView, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../../App';
+import { ResponsiveLayout } from '../components/ResponsiveLayout';
 import { useAuth } from '../context/AuthContext';
 import { useUser } from '../context/UserContext';
-import { AppHeader } from '../components/AppHeader';
-import { RootStackScreenProps } from '../types/navigation';
+import { useSmoothNavigation } from '../hooks/useSmoothNavigation';
+import { COLORS, TYPOGRAPHY, SPACING, SHADOWS } from '../constants/theme';
 
-type Props = RootStackScreenProps<'Settings'>;
+type SettingsScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Settings'>;
+
+interface Props {
+  navigation: SettingsScreenNavigationProp;
+}
 
 const SettingsScreen: React.FC<Props> = ({ navigation }) => {
-  const { logout, currentUser } = useAuth();
-  const { userData } = useUser();
+  const { currentUser, logout } = useAuth();
+  const { credits, plan, zipCode } = useUser();
+  const { navigateImmediately } = useSmoothNavigation(navigation);
 
-  const handleLogout = (): void => {
+  const handleUpgradePlan = useCallback(() => {
+    Alert.alert('Upgrade Plan', 'This feature is coming soon!');
+  }, []);
+
+  const handleSupport = useCallback(() => {
+    Alert.alert('Support', 'Contact support at support@leadgen.com');
+  }, []);
+
+  const handleLogout = useCallback(() => {
     Alert.alert(
       'Logout',
       'Are you sure you want to logout?',
@@ -23,61 +39,55 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
           style: 'destructive',
           onPress: () => {
             logout();
-            navigation.navigate('Login');
+            navigateImmediately('Login');
           }
         },
       ]
     );
-  };
+  }, [logout, navigateImmediately]);
 
-  const handleUpgradePlan = (): void => {
-    Alert.alert('Upgrade Plan', 'Upgrade functionality coming soon!');
-  };
-
-  const handleSupport = (): void => {
-    Alert.alert('Support', 'Contact support at support@leadgen.com');
-  };
-
-  const handleMenuPress = (): void => {
-    navigation.goBack();
-  };
-
-  const handleProfilePress = (): void => {
-    Alert.alert('Profile', 'Profile functionality coming soon!');
-  };
+  const handleBackToApp = useCallback(() => {
+    navigateImmediately('GenerateLead');
+  }, [navigateImmediately]);
 
   return (
-    <View style={styles.container}>
-      <AppHeader 
-        onMenuPress={handleMenuPress}
-        onProfilePress={handleProfilePress}
-        showCredits={false}
-      />
-      
-      <ScrollView style={styles.content}>
+    <ResponsiveLayout scrollable edges={['top', 'left', 'right', 'bottom']}>
+      <View style={styles.header}>
+        <Pressable style={styles.backButton} onPress={handleBackToApp}>
+          <Ionicons name="arrow-back" size={24} color={COLORS.primary} />
+        </Pressable>
         <Text style={styles.title}>Settings</Text>
+        <View style={styles.placeholder} />
+      </View>
 
+      <ScrollView style={styles.content}>
+        {/* User Info Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Account</Text>
+          <Text style={styles.sectionTitle}>Account Information</Text>
           
           <View style={styles.infoCard}>
-            <Text style={styles.infoLabel}>Username</Text>
-            <Text style={styles.infoValue}>{currentUser || 'Guest'}</Text>
+            <Text style={styles.infoLabel}>Name</Text>
+            <Text style={styles.infoValue}>{currentUser?.name || 'Not available'}</Text>
           </View>
 
           <View style={styles.infoCard}>
-            <Text style={styles.infoLabel}>Current Plan</Text>
-            <Text style={styles.infoValue}>{userData.tier || 'No Plan'}</Text>
+            <Text style={styles.infoLabel}>Email</Text>
+            <Text style={styles.infoValue}>{currentUser?.email || 'Not available'}</Text>
+          </View>
+
+          <View style={styles.infoCard}>
+            <Text style={styles.infoLabel}>Plan</Text>
+            <Text style={styles.infoValue}>{plan}</Text>
           </View>
 
           <View style={styles.infoCard}>
             <Text style={styles.infoLabel}>Credits Remaining</Text>
-            <Text style={styles.infoValue}>{userData.credits}</Text>
+            <Text style={styles.infoValue}>{credits}</Text>
           </View>
 
           <View style={styles.infoCard}>
-            <Text style={styles.infoLabel}>Monthly Price</Text>
-            <Text style={styles.infoValue}>${userData.monthlyPrice.toFixed(2)}</Text>
+            <Text style={styles.infoLabel}>Target ZIP Code</Text>
+            <Text style={styles.infoValue}>{zipCode || 'Not set'}</Text>
           </View>
         </View>
 
@@ -104,77 +114,79 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
           </Pressable>
         </View>
       </ScrollView>
-    </View>
+    </ResponsiveLayout>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F5F5F5',
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+    backgroundColor: COLORS.white,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+    ...SHADOWS.small,
+  },
+  backButton: {
+    padding: SPACING.sm,
+    borderRadius: 20,
+  },
+  title: {
+    ...TYPOGRAPHY.headline,
+    color: COLORS.primary,
+  },
+  placeholder: {
+    width: 40,
   },
   content: {
     flex: 1,
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#2196F3',
-    textAlign: 'center',
-    marginBottom: 32,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
   },
   section: {
-    marginBottom: 32,
+    marginBottom: SPACING.xl,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#424242',
-    marginBottom: 16,
+    ...TYPOGRAPHY.headline,
+    color: COLORS.textPrimary,
+    marginBottom: SPACING.md,
   },
   infoCard: {
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.white,
     borderRadius: 8,
-    padding: 16,
-    marginBottom: 12,
+    padding: SPACING.md,
+    marginBottom: SPACING.sm,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+    ...SHADOWS.small,
   },
   infoLabel: {
-    fontSize: 16,
-    color: '#757575',
+    ...TYPOGRAPHY.body,
+    color: COLORS.textSecondary,
   },
   infoValue: {
-    fontSize: 16,
+    ...TYPOGRAPHY.body,
+    color: COLORS.textPrimary,
     fontWeight: '500',
-    color: '#424242',
   },
   actionButton: {
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.white,
     borderRadius: 8,
-    padding: 16,
-    marginBottom: 12,
+    padding: SPACING.md,
+    marginBottom: SPACING.sm,
     flexDirection: 'row',
     alignItems: 'center',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+    ...SHADOWS.small,
   },
   actionText: {
-    fontSize: 16,
-    color: '#424242',
+    ...TYPOGRAPHY.body,
+    color: COLORS.textPrimary,
     flex: 1,
-    marginLeft: 16,
+    marginLeft: SPACING.md,
   },
 });
 

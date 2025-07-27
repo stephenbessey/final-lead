@@ -1,90 +1,56 @@
 import React, { Component, ReactNode } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { COLORS, TYPOGRAPHY, SPACING } from '../constants/theme';
 
-const SIMPLE_COLORS = {
-  primary: '#2196F3',
-  error: '#F44336',
-  errorLight: '#FFEBEE',
-  background: '#F5F5F5',
-  surface: '#FFFFFF',
-  textPrimary: '#212121',
-  textSecondary: '#757575',
-};
-
-const SIMPLE_SPACING = {
-  xs: 4,
-  sm: 8,
-  md: 16,
-  lg: 24,
-  xl: 32,
-};
-
-interface Props {
-  children: ReactNode;
-  fallback?: React.ComponentType<ErrorFallbackProps>;
-}
-
-interface State {
+interface ErrorBoundaryState {
   hasError: boolean;
-  error: Error | null;
+  error?: Error;
 }
 
-interface ErrorFallbackProps {
-  error: Error;
-  onReset: () => void;
+interface ErrorBoundaryProps {
+  children: ReactNode;
+  fallback?: ReactNode;
 }
 
-const DefaultErrorFallback: React.FC<ErrorFallbackProps> = ({ error, onReset }) => (
-  <View style={styles.container}>
-    <View style={styles.content}>
-      <Ionicons name="alert-circle" size={64} color={SIMPLE_COLORS.error} />
-      <Text style={styles.title}>Something went wrong</Text>
-      <Text style={styles.message}>
-        We're sorry, but something unexpected happened. Please try again.
-      </Text>
-      {__DEV__ && (
-        <View style={styles.errorDetails}>
-          <Text style={styles.errorTitle}>Error Details (Development Only):</Text>
-          <Text style={styles.errorText}>{error.message}</Text>
-          <Text style={styles.errorStack}>{error.stack}</Text>
-        </View>
-      )}
-      <Pressable style={styles.retryButton} onPress={onReset}>
-        <Text style={styles.retryButtonText}>Try Again</Text>
-      </Pressable>
-    </View>
-  </View>
-);
-
-export class ErrorBoundary extends Component<Props, State> {
-  public constructor(props: Props) {
+export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
     super(props);
-    this.state = { hasError: false, error: null };
+    this.state = { hasError: false };
   }
 
-  public static getDerivedStateFromError(error: Error): State {
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
     return { hasError: true, error };
   }
 
-  public override componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
-    if (!__DEV__) {
-      console.error('ErrorBoundary caught an error:', error, errorInfo);
-    }
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('ErrorBoundary caught an error:', error, errorInfo);
   }
 
-  private handleReset = (): void => {
-    this.setState({ hasError: false, error: null });
+  handleReset = () => {
+    this.setState({ hasError: false, error: undefined });
   };
 
-  public override render(): ReactNode {
-    if (this.state.hasError && this.state.error) {
-      const FallbackComponent = this.props.fallback || DefaultErrorFallback;
+  render() {
+    if (this.state.hasError) {
+      if (this.props.fallback) {
+        return this.props.fallback;
+      }
+
       return (
-        <FallbackComponent 
-          error={this.state.error} 
-          onReset={this.handleReset} 
-        />
+        <View style={styles.container}>
+          <Text style={styles.title}>Something went wrong</Text>
+          <Text style={styles.message}>
+            We're sorry, but something unexpected happened. Please try again.
+          </Text>
+          {__DEV__ && this.state.error && (
+            <Text style={styles.errorDetails}>
+              {this.state.error.message}
+            </Text>
+          )}
+          <Pressable style={styles.button} onPress={this.handleReset}>
+            <Text style={styles.buttonText}>Try Again</Text>
+          </Pressable>
+        </View>
       );
     }
 
@@ -95,75 +61,38 @@ export class ErrorBoundary extends Component<Props, State> {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: SIMPLE_COLORS.background,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: SIMPLE_SPACING.lg,
-  },
-  content: {
-    alignItems: 'center',
-    backgroundColor: SIMPLE_COLORS.surface,
-    borderRadius: 12,
-    padding: SIMPLE_SPACING.xl,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    maxWidth: 400,
-    width: '100%',
+    padding: SPACING.lg,
+    backgroundColor: COLORS.background,
   },
   title: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: SIMPLE_COLORS.textPrimary,
-    marginTop: SIMPLE_SPACING.md,
-    marginBottom: SIMPLE_SPACING.sm,
+    ...TYPOGRAPHY.h2,
+    color: COLORS.error,
+    marginBottom: SPACING.md,
     textAlign: 'center',
   },
   message: {
-    fontSize: 16,
-    color: SIMPLE_COLORS.textSecondary,
+    ...TYPOGRAPHY.body,
+    color: COLORS.textSecondary,
     textAlign: 'center',
-    marginBottom: SIMPLE_SPACING.lg,
-    lineHeight: 20,
+    marginBottom: SPACING.lg,
   },
   errorDetails: {
-    backgroundColor: SIMPLE_COLORS.errorLight,
+    ...TYPOGRAPHY.caption,
+    color: COLORS.textHint,
+    textAlign: 'center',
+    marginBottom: SPACING.lg,
+    fontFamily: 'monospace',
+  },
+  button: {
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
     borderRadius: 8,
-    padding: SIMPLE_SPACING.md,
-    marginBottom: SIMPLE_SPACING.lg,
-    width: '100%',
   },
-  errorTitle: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: SIMPLE_COLORS.error,
-    marginBottom: SIMPLE_SPACING.sm,
-  },
-  errorText: {
-    fontSize: 12,
-    color: SIMPLE_COLORS.error,
-    marginBottom: SIMPLE_SPACING.xs,
-  },
-  errorStack: {
-    fontSize: 10,
-    color: SIMPLE_COLORS.textSecondary,
-  },
-  retryButton: {
-    backgroundColor: SIMPLE_COLORS.primary,
-    paddingHorizontal: SIMPLE_SPACING.lg,
-    paddingVertical: SIMPLE_SPACING.md,
-    borderRadius: 8,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-  },
-  retryButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: SIMPLE_COLORS.surface,
+  buttonText: {
+    ...TYPOGRAPHY.button,
+    color: COLORS.white,
   },
 });

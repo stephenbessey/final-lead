@@ -1,77 +1,74 @@
 import React from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { ContactMethod } from '../types';
-import { COLORS, TYPOGRAPHY, SPACING, SHADOWS } from '../constants/theme';
+import { Alert } from 'react-native';
+import { ActionButtons } from './ActionButtons';
+import { openContactApp } from '../contact/contactActions';
+import { COLORS } from '../constants/theme';
+
+type ContactMethod = 'phone' | 'sms' | 'email';
 
 interface ContactActionsProps {
-  onContactAction: (method: ContactMethod) => void;
+  phone: string;
+  email: string;
+  layout?: 'horizontal' | 'vertical';
+  onContactAction?: (method: ContactMethod) => void;
 }
 
-export const ContactActions: React.FC<ContactActionsProps> = ({ onContactAction }) => (
-  <View style={styles.container}>
-    <Text style={styles.title}>Contact Actions</Text>
-    
-    <View style={styles.actionRow}>
-      <Pressable
-        style={styles.actionButton}
-        onPress={() => onContactAction('phone')}
-        android_ripple={{ color: COLORS.primaryDark }}
-      >
-        <Ionicons name="call" size={24} color={COLORS.white} />
-        <Text style={styles.actionText}>Call</Text>
-      </Pressable>
-      
-      <Pressable
-        style={styles.actionButton}
-        onPress={() => onContactAction('sms')}
-        android_ripple={{ color: COLORS.primaryDark }}
-      >
-        <Ionicons name="chatbubble" size={24} color={COLORS.white} />
-        <Text style={styles.actionText}>SMS</Text>
-      </Pressable>
-      
-      <Pressable
-        style={styles.actionButton}
-        onPress={() => onContactAction('email')}
-        android_ripple={{ color: COLORS.primaryDark }}
-      >
-        <Ionicons name="mail" size={24} color={COLORS.white} />
-        <Text style={styles.actionText}>Email</Text>
-      </Pressable>
-    </View>
-  </View>
-);
+export const ContactActions: React.FC<ContactActionsProps> = ({
+  phone,
+  email,
+  layout = 'horizontal',
+  onContactAction,
+}) => {
+  const handleCall = async () => {
+    try {
+      await openContactApp('phone', phone);
+      onContactAction?.('phone');
+    } catch (error) {
+      Alert.alert('Error', 'Unable to make phone call');
+    }
+  };
 
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: COLORS.surface,
-    padding: SPACING.lg,
-    borderRadius: 12,
-    marginBottom: SPACING.md,
-  },
-  title: {
-    ...TYPOGRAPHY.title,
-    color: COLORS.textPrimary,
-    marginBottom: SPACING.md,
-  },
-  actionRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  actionButton: {
-    backgroundColor: COLORS.primary,
-    paddingVertical: SPACING.md,
-    paddingHorizontal: SPACING.lg,
-    borderRadius: 8,
-    alignItems: 'center',
-    minWidth: 80,
-    ...SHADOWS.small,
-  },
-  actionText: {
-    ...TYPOGRAPHY.bodySmall,
-    color: COLORS.white,
-    marginTop: SPACING.xs,
-    fontWeight: '600',
-  },
-});
+  const handleSMS = async () => {
+    try {
+      await openContactApp('sms', phone);
+      onContactAction?.('sms');
+    } catch (error) {
+      Alert.alert('Error', 'Unable to send SMS');
+    }
+  };
+
+  const handleEmail = async () => {
+    try {
+      await openContactApp('email', email);
+      onContactAction?.('email');
+    } catch (error) {
+      Alert.alert('Error', 'Unable to send email');
+    }
+  };
+
+  const buttons = [
+    {
+      id: 'call',
+      title: 'Call',
+      icon: 'call' as const,
+      onPress: handleCall,
+      color: COLORS.success,
+    },
+    {
+      id: 'sms',
+      title: 'SMS',
+      icon: 'chatbubble' as const,
+      onPress: handleSMS,
+      color: COLORS.primary,
+    },
+    {
+      id: 'email',
+      title: 'Email',
+      icon: 'mail' as const,
+      onPress: handleEmail,
+      color: COLORS.secondary,
+    },
+  ];
+
+  return <ActionButtons buttons={buttons} layout={layout} />;
+};

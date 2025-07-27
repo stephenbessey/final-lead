@@ -13,7 +13,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.leadgen.realestateapp"
     },
-    "android": {},
+    "android": {
       "package": "com.leadgen.realestateapp"
     },
     "plugins": []

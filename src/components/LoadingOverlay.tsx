@@ -3,19 +3,19 @@ import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { COLORS, TYPOGRAPHY, SPACING } from '../constants/theme';
 
 interface LoadingOverlayProps {
+  visible: boolean;
   message?: string;
-  visible?: boolean;
 }
 
-export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ 
-  message = 'Loading...', 
-  visible = true 
+export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
+  visible,
+  message = 'Loading...',
 }) => {
   if (!visible) return null;
 
   return (
-    <View style={styles.container}>
-      <View style={styles.content}>
+    <View style={styles.overlay}>
+      <View style={styles.container}>
         <ActivityIndicator size="large" color={COLORS.primary} />
         <Text style={styles.message}>{message}</Text>
       </View>
@@ -24,7 +24,7 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
 };
 
 const styles = StyleSheet.create({
-  container: {
+  overlay: {
     position: 'absolute',
     top: 0,
     left: 0,
@@ -35,12 +35,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 1000,
   },
-  content: {
-    backgroundColor: COLORS.surface,
+  container: {
+    backgroundColor: COLORS.white,
     padding: SPACING.xl,
     borderRadius: 12,
     alignItems: 'center',
-    minWidth: 200,
+    minWidth: 150,
   },
   message: {
     ...TYPOGRAPHY.body,

@@ -1,10 +1,18 @@
+import { Lead, LifeEvent } from '../types';
+
+declare global {
+  interface Number {
+    toLocaleString(locales?: string | string[], options?: Intl.NumberFormatOptions): string;
+  }
+}
+
 export const formatCurrency = (amount: number): string => {
-  return amount.toLocaleString('en-US', {
+  return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  });
+  }).format(amount);
 };
 
 export const formatPhoneNumber = (phone: string): string => {
@@ -19,8 +27,13 @@ export const formatPhoneNumber = (phone: string): string => {
   return phone;
 };
 
-export const formatLifeEvent = (lifeEvent: string): string => {
-  const eventMap: Record<string, string> = {
+export const formatAddress = (address: string): string => {
+  // Basic address formatting - can be enhanced based on needs
+  return address.trim();
+};
+
+export const formatLifeEvent = (lifeEvent: LifeEvent): string => {
+  const eventMap: Record<LifeEvent, string> = {
     'baby': 'New Baby',
     'death': 'Death in Family',
     'married': 'Recently Married',
@@ -45,6 +58,14 @@ export const formatPriceRange = (priceRange: '$' | '$$' | '$$$'): string => {
   return rangeMap[priceRange] || priceRange;
 };
 
+export const formatLeadSummary = (lead: Lead): string => {
+  const lifeEvent = formatLifeEvent(lead.lifeEvent);
+  const clientType = formatClientType(lead.clientType);
+  const priceRange = formatPriceRange(lead.priceRange);
+  
+  return `${lifeEvent} - ${clientType} - ${priceRange}`;
+};
+
 export const formatDateAgo = (dateString: string): string => {
   const date = new Date(dateString);
   const now = new Date();
@@ -64,8 +85,4 @@ export const formatDateAgo = (dateString: string): string => {
   } else {
     return date.toLocaleDateString();
   }
-};
-
-export const formatLeadForExport = (lead: any): string => {
-  return `Name: ${lead.name}\nEmail: ${lead.email}\nPhone: ${lead.phone}\nAddress: ${lead.address}\nProperty Value: ${formatCurrency(lead.propertyValue)}`;
 };

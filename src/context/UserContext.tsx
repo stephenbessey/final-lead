@@ -1,99 +1,53 @@
-import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
-import { UserData } from '../types';
+import React, { createContext, useState, ReactNode } from 'react';
+import { UserState } from '../types';
 
-interface UserContextType {
-  userData: UserData;
-  isLoading: boolean;
-  error: string | null;
-  updateUserData: (data: Partial<UserData>) => Promise<void>;
-  useCredit: () => boolean;
-  resetError: () => void;
+interface UserContextType extends UserState {
+  updateCredits: (credits: number) => void;
+  updatePlan: (plan: string) => void;
+  updateZipCode: (zipCode: string) => void;
+  updateUserData: (data: any) => void;
+  userData: any;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
-
-export const useUser = (): UserContextType => {
-  const context = useContext(UserContext);
-  if (!context) {
-    throw new Error('useUser must be used within UserProvider');
-  }
-  return context;
-};
 
 interface UserProviderProps {
   children: ReactNode;
 }
 
-const INITIAL_USER_DATA: UserData = {
-  credits: 0,
-  tier: '',
-  zipCode: '',
-  monthlyPrice: 0,
-};
-
 export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
-  const [userData, setUserData] = useState<UserData>(INITIAL_USER_DATA);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+  const [userState, setUserState] = useState<UserState>({
+    credits: 25,
+    plan: 'Professional',
+    zipCode: '90210',
+  });
 
-  const updateUserData = useCallback(async (data: Partial<UserData>): Promise<void> => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      if (data.credits !== undefined && data.credits < 0) {
-        throw new Error('Credits cannot be negative');
-      }
-      
-      if (data.monthlyPrice !== undefined && data.monthlyPrice < 0) {
-        throw new Error('Monthly price cannot be negative');
-      }
-      
-      setUserData(prev => ({ ...prev, ...data }));
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update user data';
-      setError(errorMessage);
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  const [userData, setUserData] = useState<any>({});
 
-  const useCredit = useCallback((): boolean => {
-    try {
-      if (userData.credits <= 0) {
-        setError('No credits remaining');
-        return false;
-      }
+  const updateCredits = (credits: number): void => {
+    setUserState(prev => ({ ...prev, credits }));
+  };
 
-      setUserData(prev => ({ 
-        ...prev, 
-        credits: Math.max(0, prev.credits - 1)
-      }));
-      
-      setError(null);
-      return true;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to use credit';
-      setError(errorMessage);
-      return false;
-    }
-  }, [userData.credits]);
+  const updatePlan = (plan: string): void => {
+    setUserState(prev => ({ ...prev, plan }));
+  };
 
-  const resetError = useCallback((): void => {
-    setError(null);
-  }, []);
+  const updateZipCode = (zipCode: string): void => {
+    setUserState(prev => ({ ...prev, zipCode }));
+  };
 
-  const value: UserContextType = React.useMemo(() => ({
-    userData,
-    isLoading,
-    error,
+  const updateUserData = (data: any): void => {
+    setUserData(data);
+  };
+
+  const value: UserContextType = {
+    ...userState,
+    updateCredits,
+    updatePlan,
+    updateZipCode,
     updateUserData,
-    useCredit,
-    resetError,
-  }), [userData, isLoading, error, updateUserData, useCredit, resetError]);
+    userData,
+  };
 
   return (
     <UserContext.Provider value={value}>
@@ -101,3 +55,13 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     </UserContext.Provider>
   );
 };
+
+export const useUser = () => {
+  const context = React.useContext(UserContext);
+  if (!context) {
+    throw new Error('useUser must be used within a UserProvider');
+  }
+  return context;
+};
+
+export { UserContext };

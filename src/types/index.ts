@@ -1,103 +1,55 @@
 export interface Lead {
-  readonly id: string;
+  id: string;
   name: string;
-  phone: string;
   email: string;
+  phone: string;
   address: string;
-  propertyValue: string;
+  propertyValue: number;
   lifeEvent: LifeEvent;
-  clientType: ClientType;
-  priceRange: PriceRange;
-  readonly createdAt?: Date;
+  priceRange: '$' | '$$' | '$$$';
+  clientType: 'buyer' | 'seller';
+  createdAt: string; 
 }
 
 export type LifeEvent = 'baby' | 'death' | 'married' | 'house-sold' | 'divorced';
-export type ClientType = 'buyer' | 'seller';
-export type PriceRange = '$' | '$$' | '$$$';
-export type ContactMethod = 'phone' | 'sms' | 'email';
 
-export interface PricingTier {
-  readonly name: TierName;
-  readonly credits: number;
-  readonly price: number;
-  readonly features?: readonly string[];
-}
+export const LIFE_EVENT_LABELS: Record<LifeEvent, string> = {
+  'baby': 'New Baby',
+  'death': 'Death in Family',
+  'married': 'Recently Married',
+  'house-sold': 'House Sold',
+  'divorced': 'Recently Divorced',
+};
 
-export type TierName = 'Basic' | 'Professional' | 'Premium';
-
-export interface UserData {
-  credits: number;
-  tier: string;
-  zipCode: string;
-  monthlyPrice: number;
-  readonly userId?: string;
-  readonly subscriptionStartDate?: Date;
+export interface ValidationResult {
+  isValid: boolean;
+  errors: string[];
 }
 
 export interface LeadGenerationOptions {
   zipCode: string;
-  clientType?: ClientType;
-  priceRange?: PriceRange;
   maxResults?: number;
 }
 
-export interface ValidationResult {
-  isValid: boolean;
-  errors: readonly string[];
-}
+export type ContactMethod = 'phone' | 'sms' | 'email';
 
-export interface LoadingState {
-  isLoading: boolean;
-  loadingMessage?: string;
-}
-
-export interface ErrorState {
-  hasError: boolean;
-  error?: Error;
-  errorMessage?: string;
-}
-
-export interface LoginForm {
-  username: string;
-  password?: string;
-}
-
-export interface RegistrationForm {
-  selectedTier: TierName;
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  credits: number;
+  plan: 'Basic' | 'Professional' | 'Premium';
   zipCode: string;
 }
 
-export interface ContactInfo {
-  phone: string;
-  email: string;
-  address?: string;
+export interface AuthState {
+  user: User | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
 }
 
-export interface ContactActionProps {
-  onContactAction: (method: ContactMethod) => void;
+export interface UserState {
+  credits: number;
+  plan: string;
+  zipCode: string;
 }
-
-export type DeepPartial<T> = {
-  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
-};
-
-export type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
-
-export const LIFE_EVENT_LABELS = {
-  baby: 'New Baby',
-  death: 'Death in Family',
-  married: 'Recently Married',
-  'house-sold': 'House Sold Nearby',
-  divorced: 'Recently Divorced',
-} as const;
-
-export const CLIENT_TYPE_LABELS = {
-  buyer: 'Buyer',
-  seller: 'Seller',
-} as const;
-
-export const PRICE_RANGE_LABELS = {
-  '$': 'Budget',
-  '$$': 'Mid-Range',
-  '$$$': 'Premium',
-} as const;

@@ -1,28 +1,53 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Lead } from '../types';
+import { formatCurrency } from '../leads/leadFormatters';
 import { COLORS, TYPOGRAPHY, SPACING } from '../constants/theme';
 
 interface LeadHeaderProps {
-  lead: Lead;
-  lifeEvent: string;
+  lead: {
+    name: string;
+    lifeEvent: string;
+    propertyValue: number;
+  };
+  showPropertyValue?: boolean;
 }
 
-export const LeadHeader: React.FC<LeadHeaderProps> = ({ lead, lifeEvent }) => (
-  <View style={styles.container}>
-    <Text style={styles.name}>{lead.name}</Text>
-    <Text style={styles.lifeEvent}>{lifeEvent}</Text>
-    <Text style={styles.propertyValue}>{lead.propertyValue}</Text>
-  </View>
-);
+const formatLifeEvent = (lifeEvent: string): string => {
+  const eventMap: Record<string, string> = {
+    'baby': 'New Baby',
+    'death': 'Death in Family',
+    'married': 'Recently Married',
+    'house-sold': 'House Sold',
+    'divorced': 'Recently Divorced',
+  };
+  
+  return eventMap[lifeEvent] || lifeEvent;
+};
+
+export const LeadHeader: React.FC<LeadHeaderProps> = ({
+  lead,
+  showPropertyValue = true,
+}) => {
+  return (
+    <View style={styles.container}>
+      <Text style={styles.name}>{lead.name}</Text>
+      <Text style={styles.lifeEvent}>{formatLifeEvent(lead.lifeEvent)}</Text>
+      {showPropertyValue && (
+        <Text style={styles.propertyValue}>
+          {formatCurrency(lead.propertyValue)}
+        </Text>
+      )}
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
+    alignItems: 'center',
+    paddingVertical: SPACING.lg,
     backgroundColor: COLORS.surface,
-    padding: SPACING.lg,
     borderRadius: 12,
     marginBottom: SPACING.md,
-    alignItems: 'center',
   },
   name: {
     ...TYPOGRAPHY.headline,
@@ -35,7 +60,7 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.sm,
   },
   propertyValue: {
-    ...TYPOGRAPHY.title,
+    ...TYPOGRAPHY.h2,
     color: COLORS.success,
     fontWeight: 'bold',
   },

@@ -43,7 +43,6 @@ export const GenerateButton: React.FC<EnhancedGenerateButtonProps> = ({
 
 const styles = StyleSheet.create({
   buttonContainer: {
-    // Container for animation
   },
   button: {
     backgroundColor: COLORS.primary,
