@@ -1,80 +1,114 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Lead } from '../types';
-import { COLORS, TYPOGRAPHY, SPACING, SHADOWS } from '../constants/theme';
+import { COLORS, TYPOGRAPHY, SPACING, ICON_SIZES, DeviceDetection } from '../constants/theme';
 
 interface LeadContactInfoProps {
   lead: Lead;
 }
 
-export const LeadContactInfo: React.FC<LeadContactInfoProps> = ({
-  lead,
-}) => {
+interface ContactRowProps {
+  iconName: string;
+  text: string;
+  isLongText?: boolean;
+}
+
+const ContactRow: React.FC<ContactRowProps> = ({ iconName, text, isLongText = false }) => {
+  const isSmallDevice = DeviceDetection.isSmallDevice();
+  const iconSize = isSmallDevice ? ICON_SIZES.small : ICON_SIZES.medium;
+  
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Contact Information</Text>
-      
-      <View style={styles.infoGrid}>
-        <View style={styles.infoItem}>
-          <Text style={styles.label}>📞 Phone:</Text>
-          <Text style={styles.value}>{lead.phone}</Text>
-        </View>
-        
-        <View style={styles.infoItem}>
-          <Text style={styles.label}>✉️ Email:</Text>
-          <Text style={styles.value}>{lead.email}</Text>
-        </View>
-        
-        <View style={styles.infoItem}>
-          <Text style={styles.label}>🏠 Address:</Text>
-          <Text style={styles.value}>{lead.address}</Text>
-        </View>
-        
-        {lead.createdAt && (
-          <View style={styles.infoItem}>
-            <Text style={styles.label}>📅 Generated:</Text>
-            <Text style={styles.value}>
-              {lead.createdAt instanceof Date 
-                ? lead.createdAt.toLocaleDateString()
-                : new Date(lead.createdAt).toLocaleDateString()
-              }
-            </Text>
-          </View>
-        )}
+    <View style={[
+      styles.infoRow,
+      isLongText && styles.longTextRow,
+      isSmallDevice && styles.smallDeviceRow
+    ]}>
+      <View style={styles.iconContainer}>
+        <Ionicons name={iconName as any} size={iconSize} color={COLORS.primary} />
       </View>
+      <Text style={[
+        styles.infoText,
+        isSmallDevice && styles.smallDeviceText,
+        isLongText && styles.longText
+      ]}>
+        {text}
+      </Text>
+    </View>
+  );
+};
+
+export const LeadContactInfo: React.FC<LeadContactInfoProps> = ({ lead }) => {
+  const isSmallDevice = DeviceDetection.isSmallDevice();
+  
+  return (
+    <View style={[
+      styles.container,
+      isSmallDevice && styles.smallDeviceContainer
+    ]}>
+      <Text style={[
+        styles.title,
+        isSmallDevice && styles.smallDeviceTitle
+      ]}>
+        Contact Information
+      </Text>
+      
+      <ContactRow iconName="call" text={lead.phone} />
+      <ContactRow iconName="mail" text={lead.email} isLongText />
+      <ContactRow iconName="location" text={lead.address} isLongText />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: COLORS.white,
-    borderRadius: 12,
+    backgroundColor: COLORS.surface,
     padding: SPACING.lg,
-    marginBottom: SPACING.lg,
-    ...SHADOWS.small,
+    borderRadius: 12,
+    marginBottom: SPACING.md,
+    marginHorizontal: SPACING.xs, // Prevent edge cutoff
+  },
+  smallDeviceContainer: {
+    padding: SPACING.md,
   },
   title: {
-    ...TYPOGRAPHY.h3,
+    ...TYPOGRAPHY.title,
     color: COLORS.textPrimary,
     marginBottom: SPACING.md,
   },
-  infoGrid: {
-    gap: SPACING.md,
+  smallDeviceTitle: {
+    ...TYPOGRAPHY.subtitle,
+    marginBottom: SPACING.sm,
   },
-  infoItem: {
-    paddingBottom: SPACING.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: SPACING.sm,
+    paddingRight: SPACING.sm,
   },
-  label: {
-    ...TYPOGRAPHY.bodySmall,
-    color: COLORS.textSecondary,
+  smallDeviceRow: {
     marginBottom: SPACING.xs,
   },
-  value: {
+  longTextRow: {
+    alignItems: 'flex-start',
+  },
+  iconContainer: {
+    width: ICON_SIZES.large,
+    alignItems: 'center',
+    paddingTop: 2,
+  },
+  infoText: {
     ...TYPOGRAPHY.body,
     color: COLORS.textPrimary,
-    fontWeight: '500',
+    marginLeft: SPACING.sm,
+    flex: 1,
+    flexWrap: 'wrap',
+  },
+  smallDeviceText: {
+    ...TYPOGRAPHY.bodySmall,
+    marginLeft: SPACING.xs,
+  },
+  longText: {
+    lineHeight: TYPOGRAPHY.body.lineHeight * 1.1,
   },
 });
