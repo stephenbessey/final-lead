@@ -1,25 +1,76 @@
 import React from 'react';
-import { View, StyleSheet, Pressable, Text } from 'react-native';
-import { COLORS, TYPOGRAPHY, SPACING, SHADOWS } from '../constants/theme';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { COLORS, TYPOGRAPHY, SPACING, SHADOWS, ICON_SIZES, DeviceDetection } from '../constants/theme';
 
 interface ActionButtonsProps {
-  onExport: () => Promise<void>;
+  onExport: () => void;
   onBack: () => void;
 }
 
-export const ActionButtons: React.FC<ActionButtonsProps> = ({
-  onExport,
-  onBack,
+interface ResponsiveButtonProps {
+  onPress: () => void;
+  iconName: string;
+  text: string;
+  variant: 'primary' | 'secondary';
+  rippleColor: string;
+}
+
+const ResponsiveButton: React.FC<ResponsiveButtonProps> = ({ 
+  onPress, 
+  iconName, 
+  text, 
+  variant, 
+  rippleColor 
 }) => {
+  const isSmallDevice = DeviceDetection.isSmallDevice();
+  const iconSize = isSmallDevice ? ICON_SIZES.small : ICON_SIZES.medium;
+  
   return (
-    <View style={styles.container}>
-      <Pressable style={styles.exportButton} onPress={onExport}>
-        <Text style={styles.exportButtonText}>Export Lead</Text>
-      </Pressable>
+    <Pressable
+      style={[styles.button, styles[`${variant}Button`]]}
+      onPress={onPress}
+      android_ripple={{ color: rippleColor }}
+    >
+      <Ionicons 
+        name={iconName as any} 
+        size={iconSize} 
+        color={variant === 'primary' ? COLORS.white : COLORS.textPrimary} 
+      />
+      <Text style={[
+        styles.buttonText, 
+        styles[`${variant}ButtonText`],
+        isSmallDevice && styles.smallDeviceText
+      ]}>
+        {text}
+      </Text>
+    </Pressable>
+  );
+};
+
+export const ActionButtons: React.FC<ActionButtonsProps> = ({ onExport, onBack }) => {
+  const isSmallDevice = DeviceDetection.isSmallDevice();
+  
+  return (
+    <View style={[
+      styles.container,
+      isSmallDevice && styles.smallDeviceContainer
+    ]}>
+      <ResponsiveButton
+        onPress={onExport}
+        iconName="copy"
+        text="Copy to Clipboard"
+        variant="primary"
+        rippleColor={COLORS.secondaryLight}
+      />
       
-      <Pressable style={styles.backButton} onPress={onBack}>
-        <Text style={styles.backButtonText}>Back</Text>
-      </Pressable>
+      <ResponsiveButton
+        onPress={onBack}
+        iconName="arrow-back"
+        text="Back"
+        variant="secondary"
+        rippleColor={COLORS.divider}
+      />
     </View>
   );
 };
@@ -27,33 +78,47 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: SPACING.lg,
     gap: SPACING.md,
-    marginTop: SPACING.xl,
+    paddingHorizontal: SPACING.xs,
   },
-  exportButton: {
+  smallDeviceContainer: {
+    flexDirection: 'column',
+    gap: SPACING.sm,
+  },
+  button: {
     flex: 1,
-    backgroundColor: COLORS.primary,
-    paddingVertical: SPACING.md,
-    paddingHorizontal: SPACING.lg,
-    borderRadius: 8,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.sm,
+    borderRadius: 8,
+    minHeight: 48,
     ...SHADOWS.small,
   },
-  exportButtonText: {
+  primaryButton: {
+    backgroundColor: COLORS.secondary,
+  },
+  secondaryButton: {
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.divider,
+  },
+  buttonText: {
     ...TYPOGRAPHY.button,
+    marginLeft: SPACING.sm,
+    textAlign: 'center',
+    flexShrink: 1,
+  },
+  primaryButtonText: {
     color: COLORS.white,
   },
-  backButton: {
-    flex: 1,
-    backgroundColor: COLORS.textHint,
-    paddingVertical: SPACING.md,
-    paddingHorizontal: SPACING.lg,
-    borderRadius: 8,
-    alignItems: 'center',
-    ...SHADOWS.small,
+  secondaryButtonText: {
+    color: COLORS.textPrimary,
   },
-  backButtonText: {
-    ...TYPOGRAPHY.button,
-    color: COLORS.white,
+  smallDeviceText: {
+    fontSize: TYPOGRAPHY.bodySmall.fontSize,
   },
 });
