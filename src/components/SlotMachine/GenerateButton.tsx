@@ -1,86 +1,82 @@
 import React from 'react';
 import { Text, StyleSheet, Pressable, Animated } from 'react-native';
-import { ButtonState } from '../../hooks/useButtonState';
-import { COLORS, TYPOGRAPHY, SPACING, SHADOWS } from '../../constants/theme';
+import { EnhancedGenerateButtonProps } from '../../types/slotMachine';
+import { getButtonText } from '../../utils/slotMachineHelpers';
+import { COLORS, TYPOGRAPHY, SPACING, SHADOWS, DeviceDetection } from '../../constants/theme';
 import { SLOT_MACHINE_CONFIG } from '../../constants/slotMachine';
 
-interface GenerateButtonProps {
-  buttonState: ButtonState;
-  onGeneratePress: () => void;
-  onViewDetailsPress: () => void;
-  pulseValue: Animated.Value;
+interface ButtonStyleConfig {
+  minWidth: number;
+  paddingHorizontal: number;
+  paddingVertical: number;
+  fontSize: number;
 }
 
-const getButtonText = (state: ButtonState): string => {
-  switch (state) {
-    case ButtonState.GENERATE:
-      return 'Generate Lead';
-    case ButtonState.GENERATING:
-      return 'Generating...';
-    case ButtonState.VIEW_DETAILS:
-      return 'View Lead Details';
-    case ButtonState.NO_CREDITS:
-      return 'No Credits';
-    default:
-      return 'Generate Lead';
+class ButtonStyleProvider {
+  static getButtonConfig(): ButtonStyleConfig {
+    const config = SLOT_MACHINE_CONFIG.button;
+    return {
+      minWidth: config.minWidth,
+      paddingHorizontal: config.paddingHorizontal,
+      paddingVertical: config.paddingVertical,
+      fontSize: config.fontSize,
+    };
   }
-};
 
-const getButtonStyle = (state: ButtonState) => {
-  const baseStyle = [styles.button];
-  
-  switch (state) {
-    case ButtonState.NO_CREDITS:
-      return [...baseStyle, styles.buttonDisabled];
-    case ButtonState.GENERATING:
-      return [...baseStyle, styles.buttonSpinning];
-    case ButtonState.VIEW_DETAILS:
-      return [...baseStyle, styles.buttonViewDetails];
-    default:
-      return baseStyle;
+  static getButtonStyle(disabled: boolean, isSpinning: boolean, config: ButtonStyleConfig) {
+    return [
+      {
+        backgroundColor: disabled ? COLORS.textHint : (isSpinning ? COLORS.primaryDark : COLORS.primary),
+        paddingHorizontal: config.paddingHorizontal,
+        paddingVertical: config.paddingVertical,
+        borderRadius: 25,
+        minWidth: config.minWidth,
+        maxWidth: DeviceDetection.isSmallDevice() ? 280 : 320,
+        alignItems: 'center' as const,
+        justifyContent: 'center' as const,
+        ...SHADOWS.large,
+      }
+    ];
   }
-};
 
-const getTextStyle = (state: ButtonState) => {
-  const baseStyle = [styles.buttonText];
-  
-  if (state === ButtonState.NO_CREDITS) {
-    return [...baseStyle, styles.buttonTextDisabled];
+  static getTextStyle(disabled: boolean, config: ButtonStyleConfig) {
+    return [
+      {
+        ...TYPOGRAPHY.button,
+        color: COLORS.white,
+        fontSize: config.fontSize,
+        textAlign: 'center' as const,
+        flexShrink: 1, 
+      }
+    ];
   }
-  
-  return baseStyle;
-};
+}
 
-export const GenerateButton: React.FC<GenerateButtonProps> = ({
-  buttonState,
-  onGeneratePress,
-  onViewDetailsPress,
+export const GenerateButton: React.FC<EnhancedGenerateButtonProps> = ({ 
+  disabled, 
+  isSpinning, 
+  onPress,
   pulseValue,
 }) => {
-  const isDisabled = buttonState === ButtonState.NO_CREDITS || buttonState === ButtonState.GENERATING;
-  const isViewDetails = buttonState === ButtonState.VIEW_DETAILS;
+  const buttonConfig = ButtonStyleProvider.getButtonConfig();
+  const buttonStyle = ButtonStyleProvider.getButtonStyle(disabled, isSpinning, buttonConfig);
+  const textStyle = ButtonStyleProvider.getTextStyle(disabled, buttonConfig);
   
-  const handlePress = (): void => {
-    if (isViewDetails) {
-      onViewDetailsPress();
-    } else {
-      onGeneratePress();
-    }
-  };
-
   return (
     <Animated.View style={[
       styles.buttonContainer,
-      { transform: [{ scale: pulseValue }] }
+      {
+        transform: [{ scale: pulseValue }]
+      }
     ]}>
       <Pressable
-        style={getButtonStyle(buttonState)}
-        onPress={handlePress}
-        disabled={isDisabled}
+        style={buttonStyle}
+        onPress={onPress}
+        disabled={disabled || isSpinning}
         android_ripple={{ color: COLORS.primaryDark }}
       >
-        <Text style={getTextStyle(buttonState)}>
-          {getButtonText(buttonState)}
+        <Text style={textStyle}>
+          {getButtonText(disabled, isSpinning)}
         </Text>
       </Pressable>
     </Animated.View>
@@ -89,31 +85,7 @@ export const GenerateButton: React.FC<GenerateButtonProps> = ({
 
 const styles = StyleSheet.create({
   buttonContainer: {
-  },
-  button: {
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: SPACING.xl,
-    paddingVertical: SPACING.md,
-    borderRadius: 25,
-    minWidth: SLOT_MACHINE_CONFIG.button.minWidth,
     alignItems: 'center',
-    ...SHADOWS.large,
-  },
-  buttonDisabled: {
-    backgroundColor: COLORS.textHint,
-  },
-  buttonSpinning: {
-    backgroundColor: COLORS.primaryDark,
-  },
-  buttonViewDetails: {
-    backgroundColor: COLORS.success,
-  },
-  buttonText: {
-    ...TYPOGRAPHY.button,
-    color: COLORS.white,
-    fontSize: SLOT_MACHINE_CONFIG.button.fontSize,
-  },
-  buttonTextDisabled: {
-    color: COLORS.white,
+    marginHorizontal: SPACING.md,
   },
 });
