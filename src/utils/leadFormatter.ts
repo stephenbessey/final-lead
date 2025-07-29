@@ -28,7 +28,6 @@ export const formatPhoneNumber = (phone: string): string => {
 };
 
 export const formatAddress = (address: string): string => {
-  // Basic address formatting - can be enhanced based on needs
   return address.trim();
 };
 

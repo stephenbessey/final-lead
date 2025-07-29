@@ -10,6 +10,7 @@ import {
   Platform,
   ScrollView
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import { RootStackScreenProps } from '../types/navigation';
 import { COLORS, TYPOGRAPHY, SPACING, SHADOWS } from '../constants/theme';
@@ -52,61 +53,63 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const isButtonDisabled = !isValidUsername(username) || isLoading;
 
   return (
-    <KeyboardAvoidingView 
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <ScrollView 
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right', 'bottom']}>
+      <KeyboardAvoidingView 
+        style={styles.keyboardView}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <View style={styles.content}>
-          <View style={styles.header}>
-            <Text style={styles.title}>Lead Generator</Text>
-            <Text style={styles.subtitle}>Welcome Back</Text>
-          </View>
-
-          <View style={styles.form}>
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Username</Text>
-              <TextInput
-                style={styles.input}
-                value={username}
-                onChangeText={handleUsernameChange}
-                placeholder="Enter your username"
-                placeholderTextColor={COLORS.textHint}
-                autoCapitalize="none"
-                autoCorrect={false}
-                returnKeyType="done"
-                onSubmitEditing={handleLogin}
-                editable={!isLoading}
-              />
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.content}>
+            <View style={styles.header}>
+              <Text style={styles.title}>Lead Generator</Text>
+              <Text style={styles.subtitle}>Welcome Back</Text>
             </View>
 
-            <Pressable
-              style={[
-                styles.button,
-                isButtonDisabled && styles.buttonDisabled,
-              ]}
-              onPress={handleLogin}
-              disabled={isButtonDisabled}
-              android_ripple={{ color: COLORS.primaryDark }}
-            >
-              <Text style={styles.buttonText}>
-                {isLoading ? 'Logging in...' : 'Continue'}
-              </Text>
-            </Pressable>
-          </View>
+            <View style={styles.form}>
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>Username</Text>
+                <TextInput
+                  style={styles.input}
+                  value={username}
+                  onChangeText={handleUsernameChange}
+                  placeholder="Enter your username"
+                  placeholderTextColor={COLORS.textHint}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  returnKeyType="done"
+                  onSubmitEditing={handleLogin}
+                  editable={!isLoading}
+                />
+              </View>
 
-          <View style={styles.footer}>
-            <Text style={styles.description}>
-              Generate high-quality leads based on life events and property data.
-              Start your real estate prospecting journey today.
-            </Text>
+              <Pressable
+                style={[
+                  styles.button,
+                  isButtonDisabled && styles.buttonDisabled,
+                ]}
+                onPress={handleLogin}
+                disabled={isButtonDisabled}
+                android_ripple={{ color: COLORS.primaryDark }}
+              >
+                <Text style={styles.buttonText}>
+                  {isLoading ? 'Logging in...' : 'Continue'}
+                </Text>
+              </Pressable>
+            </View>
+
+            <View style={styles.footer}>
+              <Text style={styles.description}>
+                Generate high-quality leads based on life events and property data.
+                Start your real estate prospecting journey today.
+              </Text>
+            </View>
           </View>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 
@@ -114,6 +117,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+  },
+  keyboardView: {
+    flex: 1,
   },
   scrollContent: {
     flexGrow: 1,

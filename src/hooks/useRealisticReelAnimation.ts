@@ -1,6 +1,7 @@
-import { useEffect, useRef } from 'react';
-import { Animated, Easing } from 'react-native';
-import { calculateSpinDistance } from '../utils/slotMachineHelpers';
+import { useRef, useEffect } from 'react';
+import { Animated } from 'react-native';
+import { SLOT_MACHINE_CONFIG } from '../constants/slotMachine';
+import { calculateSpinDistance, createExtendedEmojiList } from '../utils/slotMachineHelpers';
 
 export const useRealisticReelAnimation = (
   isSpinning: boolean,
@@ -8,42 +9,61 @@ export const useRealisticReelAnimation = (
   duration: number,
   delay: number,
   finalIndex: number
-) => {
+): Animated.Value => {
   const translateY = useRef(new Animated.Value(0)).current;
-  const isAnimating = useRef(false);
+  const animationRef = useRef<Animated.CompositeAnimation | null>(null);
 
   useEffect(() => {
-    if (isSpinning && !isAnimating.current) {
-      isAnimating.current = true;
+    if (isSpinning) {
+      // Stop any existing animation
+      if (animationRef.current) {
+        animationRef.current.stop();
+      }
+
+      // Reset to starting position (accounting for the paddingTop)
+      translateY.setValue(-SLOT_MACHINE_CONFIG.reel.itemHeight);
+
+      // Create extended emoji list for calculations
+      const extendedEmojis = createExtendedEmojiList(emojis);
       
-      translateY.setValue(0);
+      // Calculate the final stop position
+      const finalDistance = calculateSpinDistance(extendedEmojis, finalIndex);
       
-      const spinDistance = calculateSpinDistance(emojis, finalIndex);
-      const realisticEasing = Easing.out(Easing.cubic);
-      
-      console.log(`Reel ${delay/300}: finalIndex=${finalIndex}, spinDistance=${spinDistance}`);
-      
-      setTimeout(() => {
-        Animated.timing(translateY, {
-          toValue: spinDistance,
-          duration,
-          easing: realisticEasing,
-          useNativeDriver: true,
-        }).start(() => {
-          isAnimating.current = false;
-          console.log(`Reel ${delay/300}: Animation completed at ${spinDistance}`);
-        });
-      }, delay);
-      
-    } else if (!isSpinning) {
-      isAnimating.current = false;
-      Animated.timing(translateY, {
-        toValue: 0,
-        duration: 500,
+      // Create realistic spinning animation with proper easing
+      const spinAnimation = Animated.timing(translateY, {
+        toValue: finalDistance,
+        duration: Math.max(duration - delay, 1000), // Ensure minimum duration
         useNativeDriver: true,
-      }).start();
+        // Use easing that simulates a real slot machine: fast start, gradual slowdown
+        easing: (t: number) => {
+          // Custom easing function for realistic slot machine feel
+          // Quadratic ease-out for smooth deceleration
+          return 1 - Math.pow(1 - t, 2.5);
+        },
+      });
+
+      // Start animation after delay
+      const delayedAnimation = Animated.sequence([
+        Animated.delay(delay),
+        spinAnimation,
+      ]);
+
+      animationRef.current = delayedAnimation;
+      delayedAnimation.start();
+    } else {
+      // When not spinning, ensure we're in a proper resting position
+      if (animationRef.current) {
+        animationRef.current.stop();
+        animationRef.current = null;
+      }
     }
-  }, [isSpinning, emojis, duration, delay, finalIndex, translateY]);
+
+    return () => {
+      if (animationRef.current) {
+        animationRef.current.stop();
+      }
+    };
+  }, [isSpinning, finalIndex, duration, delay, translateY, emojis]);
 
   return translateY;
 };

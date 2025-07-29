@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../App';
 import { ResponsiveLayout } from '../components/ResponsiveLayout';
@@ -44,83 +45,74 @@ const RegistrationScreen: React.FC<Props> = ({ navigation }) => {
   }, [zipCode, selectedTier, navigateImmediately]);
 
   const handleMenuPress = useCallback(() => {
-    navigateImmediately('Settings');
-  }, [navigateImmediately]);
+    navigation.goBack();
+  }, [navigation]);
 
   const handleProfilePress = useCallback(() => {
   }, []);
 
-  const handleZipCodeChange = useCallback((text: string) => {
-    setZipCode(text);
-  }, []);
-
-  const handleZipCodeValidation = useCallback((isValid: boolean) => {
-    setIsZipCodeValid(isValid);
-  }, []);
-
-  const canContinue = zipCode.trim() && isZipCodeValid;
+  const canContinue = isZipCodeValid && selectedTier;
 
   return (
-    <ResponsiveLayout scrollable edges={['top', 'left', 'right', 'bottom']}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <AppHeader 
         onMenuPress={handleMenuPress}
         onProfilePress={handleProfilePress}
         showCredits={false}
+        title="Choose Your Plan"
       />
       
-      <View style={styles.content}>
-        <Text style={styles.title}>Choose Your Plan</Text>
-        <Text style={styles.subtitle}>
-          Select the plan that best fits your lead generation needs
-        </Text>
+      <ResponsiveLayout scrollable={true} contentPadding={true} showStatusBar={false}>
+        <View style={styles.content}>
+          <Text style={styles.title}>Select Your Plan</Text>
+          <Text style={styles.subtitle}>
+            Choose the plan that best fits your lead generation needs
+          </Text>
 
-        <View style={styles.tiersContainer}>
-          {PRICING_TIERS.map((tier) => (
-            <Pressable
-              key={tier.name}
-              style={[
-                styles.tierCard,
-                selectedTier === tier.name && styles.selectedTier,
-              ]}
-              onPress={() => setSelectedTier(tier.name)}
-              android_ripple={{ color: COLORS.primaryLight }}
-            >
-              <Text style={[
-                styles.tierName,
-                selectedTier === tier.name && styles.selectedTierText,
-              ]}>
-                {tier.name}
-              </Text>
-              <Text style={[
-                styles.tierCredits,
-                selectedTier === tier.name && styles.selectedTierText,
-              ]}>
-                {tier.credits} Credits
-              </Text>
-              <Text style={[
-                styles.tierPrice,
-                selectedTier === tier.name && styles.selectedTierText,
-              ]}>
-                ${tier.price}/month
-              </Text>
-              {tier.name === 'Professional' && (
-                <View style={styles.recommendedBadge}>
-                  <Text style={styles.recommendedText}>Recommended</Text>
-                </View>
-              )}
-            </Pressable>
-          ))}
-        </View>
+          <View style={styles.tiersContainer}>
+            {PRICING_TIERS.map((tier) => (
+              <Pressable
+                key={tier.name}
+                style={[
+                  styles.tierCard,
+                  selectedTier === tier.name && styles.selectedTier,
+                ]}
+                onPress={() => setSelectedTier(tier.name)}
+              >
+                {tier.name === 'Professional' && (
+                  <View style={styles.recommendedBadge}>
+                    <Text style={styles.recommendedText}>Recommended</Text>
+                  </View>
+                )}
+                
+                <Text style={[
+                  styles.tierName,
+                  selectedTier === tier.name && styles.selectedTierText,
+                ]}>
+                  {tier.name}
+                </Text>
+                
+                <Text style={styles.tierCredits}>
+                  {tier.credits} Credits/Month
+                </Text>
+                
+                <Text style={[
+                  styles.tierPrice,
+                  selectedTier === tier.name && styles.selectedTierText,
+                ]}>
+                  ${tier.price.toFixed(2)}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
 
-        <View style={styles.inputSection}>
-          <ZipCodeInput
-            value={zipCode}
-            onChangeText={handleZipCodeChange}
-            onValidationChange={handleZipCodeValidation}
-            placeholder="Enter your ZIP code"
-            label="Target ZIP Code"
-            showError={true}
-          />
+          <View style={styles.inputSection}>
+            <ZipCodeInput
+              value={zipCode}
+              onChangeText={setZipCode}
+              onValidationChange={setIsZipCodeValid}
+            />
+          </View>
         </View>
 
         <View style={styles.buttonContainer}>
@@ -131,7 +123,6 @@ const RegistrationScreen: React.FC<Props> = ({ navigation }) => {
             ]}
             onPress={handleContinue}
             disabled={!canContinue}
-            android_ripple={{ color: COLORS.primaryDark }}
           >
             <Text style={[
               styles.continueButtonText,
@@ -141,20 +132,22 @@ const RegistrationScreen: React.FC<Props> = ({ navigation }) => {
             </Text>
           </Pressable>
         </View>
-      </View>
-    </ResponsiveLayout>
+      </ResponsiveLayout>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+  },
   content: {
     flex: 1,
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
   },
   title: {
-    ...TYPOGRAPHY.h1,
-    color: COLORS.primary,
+    ...TYPOGRAPHY.h2,
+    color: COLORS.textPrimary,
     textAlign: 'center',
     marginBottom: SPACING.xs,
   },

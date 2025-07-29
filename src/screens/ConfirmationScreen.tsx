@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../App';
@@ -43,7 +44,7 @@ const ConfirmationScreen: React.FC<Props> = ({ navigation, route }) => {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <AppHeader 
         onMenuPress={handleMenuPress}
         onProfilePress={handleProfilePress}
@@ -104,7 +105,7 @@ const ConfirmationScreen: React.FC<Props> = ({ navigation, route }) => {
           <Text style={styles.backButtonText}>Back to Plan Selection</Text>
         </Pressable>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 

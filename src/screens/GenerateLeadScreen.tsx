@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect } from 'react';
 import { View, Text, StyleSheet, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useUser } from '../context/UserContext';
 import { useButtonState, ButtonState } from '../hooks/useButtonState';
 import { AppHeader } from '../components/AppHeader';
@@ -108,7 +109,7 @@ const GenerateLeadScreen: React.FC<Props> = ({ navigation }) => {
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <AppHeader 
         onMenuPress={handleMenuPress}
         onProfilePress={handleProfilePress}
@@ -147,7 +148,7 @@ const GenerateLeadScreen: React.FC<Props> = ({ navigation }) => {
       </View>
 
       <LoadingOverlay visible={isLoading} />
-    </View>
+    </SafeAreaView>
   );
 };
 

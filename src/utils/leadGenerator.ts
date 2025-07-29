@@ -47,7 +47,7 @@ const getRandomLifeEvent = (): LifeEvent => {
 
 const getRandomClientType = (): ClientType => {
   if (CLIENT_TYPES.length === 0) {
-    return 'buyer'; // fallback
+    return 'buyer'; 
   }
   const index = Math.floor(Math.random() * CLIENT_TYPES.length);
   return CLIENT_TYPES[index];
@@ -55,7 +55,7 @@ const getRandomClientType = (): ClientType => {
 
 const getRandomPriceRange = (): PriceRange => {
   if (PRICE_RANGES.length === 0) {
-    return '$'; // fallback
+    return '$'; 
   }
   const index = Math.floor(Math.random() * PRICE_RANGES.length);
   return PRICE_RANGES[index];

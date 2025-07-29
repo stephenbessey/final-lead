@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
     padding: SPACING.lg,
     borderRadius: 12,
     marginBottom: SPACING.md,
-    marginHorizontal: SPACING.xs, // Prevent edge cutoff
+    marginHorizontal: SPACING.xs, 
   },
   smallDeviceContainer: {
     padding: SPACING.md,

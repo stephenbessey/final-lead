@@ -9,20 +9,34 @@ export const calculateReelHeight = (): number => {
   return SLOT_MACHINE_CONFIG.reel.visibleItems * SLOT_MACHINE_CONFIG.reel.itemHeight;
 };
 
-export const calculateSpinDistance = (emojis: readonly string[], finalIndex: number): number => {
+export const calculateSpinDistance = (extendedEmojis: string[], finalIndex: number): number => {
   const itemHeight = SLOT_MACHINE_CONFIG.reel.itemHeight;
   const visibleItems = SLOT_MACHINE_CONFIG.reel.visibleItems;
+  const originalEmojisLength = extendedEmojis.length / SLOT_MACHINE_CONFIG.reel.repetitions;
   
-  const safeIndex = Math.max(0, Math.min(finalIndex, emojis.length - 1));
+  // Ensure finalIndex is within bounds of original emoji array
+  const safeIndex = Math.max(0, Math.min(finalIndex, originalEmojisLength - 1));
   
+  // Calculate center position offset (middle of visible window)
   const centerOffset = Math.floor(visibleItems / 2) * itemHeight;
-  const targetPosition = safeIndex * itemHeight;
   
+  // We want to stop at a position where the target emoji is in the center
+  // Find a good stopping position in one of the middle repetitions (not the last one)
+  const targetRepetition = Math.floor(SLOT_MACHINE_CONFIG.reel.repetitions / 2); // Use middle repetition
+  const targetPositionInExtended = (targetRepetition * originalEmojisLength + safeIndex) * itemHeight;
+  
+  // Add some spinning for visual effect (2-3 full cycles through original emoji set)
   const spinCycles = 3;
-  const fullCycleDistance = emojis.length * itemHeight;
-  const totalSpinDistance = spinCycles * fullCycleDistance;
+  const originalArrayDistance = originalEmojisLength * itemHeight;
+  const extraSpinDistance = spinCycles * originalArrayDistance;
   
-  return -(totalSpinDistance + targetPosition - centerOffset);
+  // Calculate total distance: extra spins + position to target emoji - center offset
+  // The paddingTop from Reel component also affects positioning
+  const paddingTopOffset = itemHeight; // This matches the paddingTop in Reel component
+  const totalDistance = extraSpinDistance + targetPositionInExtended - centerOffset - paddingTopOffset;
+  
+  // Return negative value because we're moving the content up
+  return -totalDistance;
 };
 
 export const generateLeadBasedIndices = (lead: Lead): number[] => [

@@ -46,7 +46,8 @@ export const SLOT_MACHINE_TEXTS = {
     noCredits: 'No Credits',
     generating: 'Generating...',
     generate: 'Generate Lead',
-    viewResults: 'View Results',
+    viewResults: 'View Lead', 
+    viewDetails: 'View Lead',
     skip: 'Skip Animation',
   },
 } as const;

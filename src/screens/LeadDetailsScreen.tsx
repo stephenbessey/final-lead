@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
 import * as Clipboard from 'expo-clipboard';
@@ -15,6 +16,7 @@ import { getLifeEventDisplay } from '../leads/lifeEvents';
 import { formatLeadForExport } from '../utils/leadGenerator';
 import { openContactApp, getContactMethodLabel } from '../contact/contactActions';
 import { confirmContactAction, warnAboutDataLoss } from '../userInterface/alerts';
+import { COLORS } from '../constants/theme';
 
 type LeadDetailsScreenNavigationProp = StackNavigationProp<RootStackParamList, 'LeadDetails'>;
 type LeadDetailsScreenRouteProp = RouteProp<RootStackParamList, 'LeadDetails'>;
@@ -63,11 +65,10 @@ const LeadDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
   };
 
   const handleProfilePress = (): void => {
-    // Profile functionality
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <AppHeader 
         onMenuPress={handleMenuPress}
         onProfilePress={handleProfilePress}
@@ -85,14 +86,14 @@ const LeadDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
         visible={showClipboardFeedback}
         message="Lead details copied to clipboard!"
       />
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: COLORS.background,
   },
   content: {
     flex: 1,

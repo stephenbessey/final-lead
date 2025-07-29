@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, Pressable, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useUser } from '../context/UserContext';
 import { AppHeader } from '../components/AppHeader';
@@ -64,7 +65,7 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
   const hasZipCodeChanges = zipCode.trim() !== (userData.zipCode || '');
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <AppHeader 
         onMenuPress={handleBackPress}
         onProfilePress={handleProfilePress}
@@ -151,7 +152,7 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
       </ScrollView>
 
       <LoadingOverlay visible={isLoading} />
-    </View>
+    </SafeAreaView>
   );
 };
 

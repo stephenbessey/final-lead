@@ -42,7 +42,6 @@ export const useMachineEffects = (isSpinning: boolean, duration: number) => {
       vibrationAnimation.start();
       pulseAnimation.start();
       
-      // Stop animations after spinning
       setTimeout(() => {
         vibrationAnimation.stop();
         pulseAnimation.stop();
