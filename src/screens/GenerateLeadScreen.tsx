@@ -137,16 +137,7 @@ const GenerateLeadScreen: React.FC<Props> = ({ navigation }) => {
             onLeadGenerated={handleLeadGenerated}
           />
         </View>
-
-        {renderCreditWarning()}
-
-        <View style={styles.infoContainer}>
-          <Text style={styles.infoText}>
-            Each spin costs 1 credit. Generate high-quality leads based on life events.
-          </Text>
-        </View>
       </View>
-
       <LoadingOverlay visible={isLoading} />
     </SafeAreaView>
   );
