@@ -26,70 +26,136 @@ export const COLORS = {
   primary: '#2196F3',
   primaryLight: '#E3F2FD',
   primaryDark: '#1976D2',
+  
   secondary: '#FF9800',
   secondaryLight: '#FFF3E0',
-  accent: '#4CAF50',
-  error: '#F44336',
-  errorLight: '#FFEBEE',
-  warning: '#FF9800',
-  warningLight: '#FFF3E0',
+  secondaryDark: '#F57C00',
+  
   success: '#4CAF50',
   successLight: '#E8F5E8',
-  background: '#F5F5F5',
-  surface: '#FFFFFF',
-  divider: '#E0E0E0',
+  warning: '#FF9800',
+  warningLight: '#FFF3E0',
+  error: '#F44336',
+  errorLight: '#FFEBEE',
+  
   textPrimary: '#212121',
   textSecondary: '#757575',
-  textHint: '#9E9E9E',
+  textHint: '#BDBDBD',
+  
+  background: '#FAFAFA',
+  backgroundSecondary: '#F5F5F5',
   white: '#FFFFFF',
-  black: '#000000',
+  
+  border: '#E0E0E0',
+  borderLight: '#F0F0F0',
+  
+  surface: '#FFFFFF',
+  
+  divider: '#E0E0E0',
 } as const;
 
 export const TYPOGRAPHY = {
-  headline: {
-    fontSize: ResponsiveSpacing.getSpacing(24),
+  h1: {
+    fontSize: 28,
     fontWeight: 'bold' as const,
-    lineHeight: ResponsiveSpacing.getSpacing(32),
+    lineHeight: 32,
+  },
+  h2: {
+    fontSize: 24,
+    fontWeight: 'bold' as const,
+    lineHeight: 28,
+  },
+  h3: {
+    fontSize: 20,
+    fontWeight: 'bold' as const,
+    lineHeight: 24,
+  },
+  headline: {
+    fontSize: 24,
+    fontWeight: 'bold' as const,
+    lineHeight: 32,
   },
   title: {
-    fontSize: ResponsiveSpacing.getSpacing(20),
-    fontWeight: '600' as const,
-    lineHeight: ResponsiveSpacing.getSpacing(28),
+    fontSize: 20,
+    fontWeight: 'bold' as const,
+    lineHeight: 24,
   },
   subtitle: {
-    fontSize: ResponsiveSpacing.getSpacing(16),
+    fontSize: 16,
     fontWeight: '500' as const,
-    lineHeight: ResponsiveSpacing.getSpacing(24),
+    lineHeight: 20,
   },
   body: {
-    fontSize: ResponsiveSpacing.getSpacing(16),
+    fontSize: 16,
     fontWeight: 'normal' as const,
-    lineHeight: ResponsiveSpacing.getSpacing(24),
+    lineHeight: 24,
+  },
+  bodyMedium: {
+    fontSize: 14,
+    fontWeight: '500' as const,
+    lineHeight: 20,
   },
   bodySmall: {
-    fontSize: ResponsiveSpacing.getSpacing(14),
+    fontSize: 14,
     fontWeight: 'normal' as const,
-    lineHeight: ResponsiveSpacing.getSpacing(20),
+    lineHeight: 20,
   },
   caption: {
-    fontSize: ResponsiveSpacing.getSpacing(12),
+    fontSize: 12,
     fontWeight: 'normal' as const,
-    lineHeight: ResponsiveSpacing.getSpacing(16),
+    lineHeight: 16,
   },
   button: {
-    fontSize: ResponsiveSpacing.getSpacing(16),
+    fontSize: 16,
     fontWeight: '600' as const,
-    lineHeight: ResponsiveSpacing.getSpacing(20),
+    lineHeight: 20,
+  },
+  emoji: {
+    fontSize: 32,
+    lineHeight: 40,
   },
 } as const;
 
 export const SPACING = {
-  xs: ResponsiveSpacing.getSpacing(4),
-  sm: ResponsiveSpacing.getSpacing(8),
-  md: ResponsiveSpacing.getSpacing(16),
-  lg: ResponsiveSpacing.getSpacing(24),
-  xl: ResponsiveSpacing.getSpacing(32),
-  xxl: ResponsiveSpacing.getSpacing(40),
+  xs: 4,
+  sm: 8,
+  md: 16,
+  lg: 24,
+  xl: 32,
+  xxl: 48,
+} as const;
+
+export const SHADOWS = {
+  small: {
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  medium: {
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  large: {
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 6,
+  },
 } as const;
 
 export const ICON_SIZES = {
@@ -104,28 +170,4 @@ export const BORDER_RADIUS = {
   medium: 8,
   large: 12,
   circle: 50,
-} as const;
-
-export const SHADOWS = {
-  small: {
-    shadowColor: COLORS.black,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  medium: {
-    shadowColor: COLORS.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  large: {
-    shadowColor: COLORS.black,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 8,
-  },
 } as const;
