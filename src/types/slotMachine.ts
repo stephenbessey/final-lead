@@ -1,6 +1,7 @@
 import React from 'react';
 import { Animated } from 'react-native';
 import { Lead } from './index';
+import { ButtonState } from '../hooks/useButtonState';
 
 export interface SlotMachineProps {
   isSpinning: boolean;
@@ -22,12 +23,24 @@ export interface SlotMachineFrameProps {
   children: React.ReactNode;
 }
 
-export interface GenerateButtonProps {
-  disabled: boolean;
-  isSpinning: boolean;
-  onPress: () => void;
+export interface EnhancedGenerateButtonProps {
+  readonly buttonState: ButtonState;
+  readonly onGeneratePress: () => void;
+  readonly onViewDetailsPress: () => void;
+  readonly pulseValue: Animated.Value;
 }
 
-export interface EnhancedGenerateButtonProps extends GenerateButtonProps {
-  pulseValue: Animated.Value;
+export interface ResponsiveButtonConfig {
+  readonly minWidth: number;
+  readonly maxWidth: number;
+  readonly paddingHorizontal: number;
+  readonly paddingVertical: number;
+  readonly fontSize: number;
+}
+
+export interface ResponsiveMachineConfig {
+  readonly minWidth: number;
+  readonly maxWidth: number;
+  readonly borderRadius: number;
+  readonly borderWidth: number;
 }

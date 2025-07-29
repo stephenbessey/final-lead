@@ -1,63 +1,64 @@
+
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { SlotMachineFrameProps } from '../../types/slotMachine';
 import { MachineDecorations } from './MachineDecorations';
+import { ResponsiveConfigService } from '../../services/ResponsiveConfigService';
 import { COLORS, TYPOGRAPHY, SPACING, SHADOWS, DeviceDetection } from '../../constants/theme';
-import { SLOT_MACHINE_TEXTS, SLOT_MACHINE_CONFIG } from '../../constants/slotMachine';
+import { SLOT_MACHINE_TEXTS } from '../../constants/slotMachine';
 
 class FrameStyleCalculator {
+  private static configService = ResponsiveConfigService.getInstance();
+  
   static getFrameStyle() {
-    const config = SLOT_MACHINE_CONFIG.machine;
+    const config = this.configService.getMachineConfig();
     const isSmallDevice = DeviceDetection.isSmallDevice();
     
-    return {
-      backgroundColor: COLORS.surface,
-      borderRadius: config.borderRadius,
-      padding: isSmallDevice ? SPACING.md : SPACING.lg,
-      ...SHADOWS.large,
-      borderWidth: config.borderWidth,
-      borderColor: COLORS.primary,
-      minWidth: config.minWidth,
-      maxWidth: config.maxWidth,
-      alignSelf: 'center' as const,
-      marginHorizontal: SPACING.sm,
-    };
+    return [
+      styles.baseFrame,
+      {
+        borderRadius: config.borderRadius,
+        borderWidth: config.borderWidth,
+        padding: isSmallDevice ? SPACING.md : SPACING.lg,
+        minWidth: config.minWidth,
+        maxWidth: config.maxWidth,
+      }
+    ];
   }
 
   static getHeaderStyle() {
     const isSmallDevice = DeviceDetection.isSmallDevice();
     
-    return {
-      backgroundColor: COLORS.primary,
-      borderRadius: 12,
-      padding: isSmallDevice ? SPACING.xs : SPACING.sm,
-      marginBottom: isSmallDevice ? SPACING.md : SPACING.lg,
-    };
+    return [
+      styles.baseHeader,
+      {
+        padding: isSmallDevice ? SPACING.xs : SPACING.sm,
+        marginBottom: isSmallDevice ? SPACING.md : SPACING.lg,
+      }
+    ];
   }
 
   static getTitleStyle() {
     const isSmallDevice = DeviceDetection.isSmallDevice();
     
-    return {
-      ...TYPOGRAPHY.caption,
-      color: COLORS.white,
-      textAlign: 'center' as const,
-      fontWeight: 'bold' as const,
-      fontSize: isSmallDevice ? 12 : 14,
-    };
+    return [
+      styles.baseTitle,
+      {
+        fontSize: isSmallDevice ? 12 : 14,
+      }
+    ];
   }
 
   static getReelsContainerStyle() {
     const isSmallDevice = DeviceDetection.isSmallDevice();
     
-    return {
-      flexDirection: 'row' as const,
-      justifyContent: 'space-between' as const,
-      backgroundColor: COLORS.background,
-      borderRadius: 16,
-      padding: isSmallDevice ? SPACING.sm : SPACING.md,
-      gap: isSmallDevice ? SPACING.xs : SPACING.sm,
-    };
+    return [
+      styles.baseReelsContainer,
+      {
+        padding: isSmallDevice ? SPACING.sm : SPACING.md,
+        gap: isSmallDevice ? SPACING.xs : SPACING.sm,
+      }
+    ];
   }
 }
 
@@ -83,3 +84,29 @@ export const SlotMachineFrame: React.FC<SlotMachineFrameProps> = ({ children }) 
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  baseFrame: {
+    backgroundColor: COLORS.surface,
+    borderColor: COLORS.primary,
+    alignSelf: 'center',
+    marginHorizontal: SPACING.sm,
+    ...SHADOWS.large,
+  },
+  baseHeader: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 12,
+  },
+  baseTitle: {
+    ...TYPOGRAPHY.caption,
+    color: COLORS.white,
+    textAlign: 'center',
+    fontWeight: 'bold',
+  },
+  baseReelsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    backgroundColor: COLORS.background,
+    borderRadius: 16,
+  },
+});
