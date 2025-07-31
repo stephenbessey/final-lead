@@ -37,11 +37,16 @@ const ResponsiveButton: React.FC<ResponsiveButtonProps> = ({
         size={iconSize} 
         color={variant === 'primary' ? COLORS.white : COLORS.textPrimary} 
       />
-      <Text style={[
-        styles.buttonText, 
-        styles[`${variant}ButtonText`],
-        isSmallDevice && styles.smallDeviceText
-      ]}>
+      <Text 
+        style={[
+          styles.buttonText, 
+          styles[`${variant}ButtonText`],
+          isSmallDevice && styles.smallDeviceText
+        ]}
+        numberOfLines={1}
+        adjustsFontSizeToFit={true}
+        minimumFontScale={0.8}
+      >
         {text}
       </Text>
     </Pressable>
@@ -110,7 +115,7 @@ const styles = StyleSheet.create({
     ...TYPOGRAPHY.button,
     marginLeft: SPACING.sm,
     textAlign: 'center',
-    flexShrink: 1,
+    flex: 1,
   },
   primaryButtonText: {
     color: COLORS.white,
