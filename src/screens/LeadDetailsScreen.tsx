@@ -70,7 +70,7 @@ const LeadDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <AppHeader 
-        onMenuPress={handleMenuPress}
+        onSettingsPress={handleMenuPress}
         onProfilePress={handleProfilePress}
         showCredits={false}
       />
