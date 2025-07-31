@@ -67,10 +67,12 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <AppHeader 
+        onMenuPress={handleBackPress}
         onProfilePress={handleProfilePress}
         showCredits={true}
         credits={userData.credits}
         title="Settings"
+        showBackButton={true}
       />
       
       <ScrollView style={styles.content}>

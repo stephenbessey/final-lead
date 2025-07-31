@@ -1,29 +1,38 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { COLORS, TYPOGRAPHY, SPACING, SHADOWS } from '../constants/theme';
 
 interface AppHeaderProps {
-  onSettingsPress?: () => void;
+  onMenuPress: () => void;
   onProfilePress: () => void;
   showCredits?: boolean;
   credits?: number;
   title?: string;
+  showBackButton?: boolean; 
 }
 
 export const AppHeader: React.FC<AppHeaderProps> = ({
-  onSettingsPress,
+  onMenuPress,
   onProfilePress,
   showCredits = false,
   credits = 0,
   title,
+  showBackButton = false, 
 }) => {
   return (
     <View style={styles.container}>
-      <View style={styles.leftSection}>
-        {title && (
-          <Text style={styles.title}>{title}</Text>
+      <Pressable style={styles.menuButton} onPress={onMenuPress}>
+        {showBackButton ? (
+          <Ionicons name="arrow-back" size={24} color={COLORS.textPrimary} />
+        ) : (
+          <Ionicons name="settings" size={24} color={COLORS.textPrimary} />
         )}
-      </View>
+      </Pressable>
+      
+      {title && (
+        <Text style={styles.title}>{title}</Text>
+      )}
       
       {showCredits && (
         <View style={styles.creditsContainer}>
@@ -31,17 +40,9 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
         </View>
       )}
       
-      <View style={styles.rightSection}>
-        {onSettingsPress && (
-          <Pressable style={styles.settingsButton} onPress={onSettingsPress}>
-            <Text style={styles.settingsIcon}>⚙️</Text>
-          </Pressable>
-        )}
-        
-        <Pressable style={styles.profileButton} onPress={onProfilePress}>
-          <Text style={styles.profileIcon}>👤</Text>
-        </Pressable>
-      </View>
+      <Pressable style={styles.profileButton} onPress={onProfilePress}>
+        <Text style={styles.profileIcon}>👤</Text>
+      </Pressable>
     </View>
   );
 };
@@ -56,13 +57,16 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     ...SHADOWS.small,
   },
-  leftSection: {
-    flex: 1,
-    alignItems: 'flex-start',
+  menuButton: {
+    padding: SPACING.sm,
+    minWidth: 40, 
+    alignItems: 'center',
   },
   title: {
     ...TYPOGRAPHY.h3,
     color: COLORS.textPrimary,
+    flex: 1,
+    textAlign: 'center',
   },
   creditsContainer: {
     backgroundColor: COLORS.primaryLight,
@@ -74,17 +78,6 @@ const styles = StyleSheet.create({
     ...TYPOGRAPHY.bodySmall,
     color: COLORS.primary,
     fontWeight: '600',
-  },
-  rightSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.sm,
-  },
-  settingsButton: {
-    padding: SPACING.sm,
-  },
-  settingsIcon: {
-    fontSize: 24,
   },
   profileButton: {
     padding: SPACING.sm,
