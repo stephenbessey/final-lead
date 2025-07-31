@@ -111,7 +111,7 @@ const GenerateLeadScreen: React.FC<Props> = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <AppHeader 
-        onMenuPress={handleMenuPress}
+        onSettingsPress={handleMenuPress}
         onProfilePress={handleProfilePress}
         showCredits={true}
         credits={userData.credits}
